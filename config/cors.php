@@ -6,20 +6,15 @@ return [
     |--------------------------------------------------------------------------
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
-    |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
     */
 
+    // On s'assure que TOUTES les routes commençant par api/ sont autorisées
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // On autorise ton frontend React (port 3000)
+    'allowed_origins' => ['http://localhost:3000'],
 
     'allowed_origins_patterns' => [],
 
@@ -29,6 +24,9 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    /* | IMPORTANT : Passe à 'true' si tu utilises l'authentification (Sanctum/Sessions)
+    | Sinon, garde 'false' mais assure-toi que l'origine est bien définie au-dessus.
+    */
+    'supports_credentials' => true,
 
 ];

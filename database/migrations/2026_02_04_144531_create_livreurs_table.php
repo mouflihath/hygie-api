@@ -17,6 +17,7 @@ return new class extends Migration
 
                 $table->string('telephone');
                 $table->string('vehicule')->nullable();
+                $table->string('matricule')->nullable();
                 $table->enum('statut', ['disponible', 'en_livraison', 'hors_ligne'])->default('disponible');
             $table->timestamps();
         });
