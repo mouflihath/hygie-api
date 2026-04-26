@@ -12,37 +12,55 @@ class Commande extends Model
 {
     use HasFactory;
 
-    // 1. Autoriser l'insertion de ces champs (Indispensable pour le $request->all())
     protected $fillable = [
+        // Champs originaux
         'patient_id',
         'pharmacie_id',
         'livreur_id',
         'statut',
         'mode_livraison',
-        'montant_total'
+        'montant_total',
+
+        // Nouveaux champs envoyés depuis React
+        'reference_commande',
+        'montant_pharmacie',
+        'frais_livraison',
+        'commission_application',
+        'montant_total_patient',
+        'methode_paiement',
+        'etat_commande',
+        'message_client',
+        'patient_nom',
+        'patient_telephone',
+        'fedapay_transaction_id',
+      
     ];
 
-    // 2. Relations mises à jour avec les bonnes clés étrangères de ta migration
+    // ── RELATIONS ────────────────────────────────────────────────────────────
 
     public function patient(): BelongsTo
     {
-        // On précise 'patient_id' car ce n'est pas le nom par défaut (user_id)
         return $this->belongsTo(User::class, 'patient_id');
     }
 
     public function pharmacie(): BelongsTo
     {
-        // Si tes pharmacies sont aussi dans la table Users, utilise User::class
         return $this->belongsTo(User::class, 'pharmacie_id');
     }
 
     public function livreur(): BelongsTo
     {
-        // nullable dans ta migration, donc peut renvoyer null
         return $this->belongsTo(User::class, 'livreur_id');
     }
 
+    // Lignes de commande (médicaments commandés)
     public function lignes(): HasMany
+    {
+        return $this->hasMany(LigneCommande::class);
+    }
+
+    // Alias plus explicite pour les médicaments de la commande
+    public function medicaments(): HasMany
     {
         return $this->hasMany(LigneCommande::class);
     }

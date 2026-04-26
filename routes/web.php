@@ -5,68 +5,101 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\PharmacyController;
 use App\Http\Controllers\Pharmacie\DashboardController as PharmacieDashboard;
+use App\Http\Controllers\Pharmacie\StockController;
+use App\Http\Controllers\Pharmacie\LivreurController;
+use App\Http\Controllers\Pharmacie\ExpeditionController;
+use App\Http\Controllers\Pharmacie\CommandesController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
+// ─────────────────────────────────────────────────────────────────────────────
+// ACCUEIL & AUTHENTIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
 require __DIR__.'/auth.php';
 
-// --- ROUTES PROTÉGÉES (Utilisateurs connectés uniquement) ---
-Route::middleware(['auth', 'verified', 'prevent.back.history'])->group(function () {
+// Redirection forcée du login pharmacie
+Route::get('/login-pharmacie', function() {
+    return redirect()->route('login');
+})->name('pharmacie.login');
 
-    /**
-     * TOUR DE CONTRÔLE : Redirection intelligente selon le rôle
-     */
-    Route::get('/dashboard', function () {
-        $user = auth()->user();
+// ─────────────────────────────────────────────────────────────────────────────
+// TOUR DE CONTRÔLE (Redirection après Login)
+// ─────────────────────────────────────────────────────────────────────────────
+Route::get('/dashboard', function () {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
 
-        return match($user->role) {
-            'admin'     => redirect()->route('admin.dashboard'),
-            'pharmacie' => redirect()->route('pharmacie.dashboard'),
-            default     => redirect('/'),
-        };
-    })->name('dashboard');
+    $role = auth()->user()->role;
 
-    /**
-     * SECTION ADMINISTRATION
-     */
-    Route::middleware(['can:admin-access'])->prefix('admin')->name('admin.')->group(function () {
+    if ($role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    } elseif ($role === 'pharmacie') {
+        return redirect()->route('pharmacie.dashboard');
+    }
 
-        // Dashboard Principal : admin.dashboard
+    return redirect()->route('home');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION ADMINISTRATION
+// ─────────────────────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'verified', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
         Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
 
-        // GESTION DES PHARMACIES : admin.pharmacies.*
-        Route::prefix('pharmacies')->name('pharmacies.')->group(function() {
-            Route::get('/', [PharmacyController::class, 'index'])->name('index');
-            Route::post('/store', [PharmacyController::class, 'store'])->name('store');
-
-            // CORRECTION : On enlève le "/update" de l'URL pour correspondre au formulaire
-            Route::put('/{pharmacie}', [PharmacyController::class, 'update'])->name('update');
-
+        Route::prefix('pharmacies')->name('pharmacies.')->group(function () {
+            Route::get('/',               [PharmacyController::class, 'index'])->name('index');
+            Route::post('/store',         [PharmacyController::class, 'store'])->name('store');
+            Route::put('/{pharmacie}',    [PharmacyController::class, 'update'])->name('update');
             Route::delete('/{pharmacie}', [PharmacyController::class, 'destroy'])->name('destroy');
+            Route::get('/{pharmacie}', [PharmacyController::class, 'edit'])->name('edit');
         });
-    });
+});
 
-    /**
-     * SECTION PHARMACIE
-     */
-    Route::middleware(['can:pharmacie-access'])->prefix('pharmacie')->name('pharmacie.')->group(function () {
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION PHARMACIE
+// ─────────────────────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'role:pharmacie'])
+    ->prefix('pharmacie')
+    ->name('pharmacie.')
+    ->group(function () {
+
+        // Dashboard
         Route::get('/dashboard', [PharmacieDashboard::class, 'index'])->name('dashboard');
-    });
 
-    /**
-     * GESTION DU PROFIL
-     */
-    Route::prefix('profile')->name('profile.')->group(function () {
-        Route::get('/', [ProfileController::class, 'edit'])->name('edit');
-        Route::patch('/', [ProfileController::class, 'update'])->name('update');
+        // Gestion du Stock
+        Route::resource('stocks', StockController::class);
+
+        // Gestion des Livreurs
+        Route::prefix('livreurs')->name('livreurs.')->group(function () {
+            Route::get('/',             [LivreurController::class, 'index'])->name('index');
+            Route::post('/store',       [LivreurController::class, 'store'])->name('store');
+            Route::put('/{livreur}',    [LivreurController::class, 'update'])->name('update');
+            Route::delete('/{livreur}', [LivreurController::class, 'destroy'])->name('destroy');
+        });
+
+        // Expéditions
+        Route::post('/expeditions/store', [ExpeditionController::class, 'store'])->name('expeditions.store');
+
+        // COMMANDES (Correction ici : l'URL devient /pharmacie/commandes)
+      // ✅ APRÈS - bien dans le groupe, préfixe correct, nom correct
+Route::get('/commandes', [CommandesController::class, 'index'])->name('commandes');
+Route::put('/commandes/{id}/statut', [PharmacieDashboard::class, 'updateStatut'])->name('commandes.statut');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GESTION DU PROFIL
+// ─────────────────────────────────────────────────────────────────────────────
+Route::middleware(['auth'])
+    ->prefix('profile')
+    ->name('profile.')
+    ->group(function () {
+        Route::get('/',    [ProfileController::class, 'edit'])->name('edit');
+        Route::patch('/',  [ProfileController::class, 'update'])->name('update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
-    });
 });

@@ -45,7 +45,7 @@
         }
 
         .logo-text {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 800;
             letter-spacing: -1px;
             color: white;
@@ -205,10 +205,9 @@
 <body>
 
     <nav id="navbar">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="background: var(--primary); color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-weight: 800; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);">+</div>
-            <span class="logo-text uppercase italic">Hygie+</span>
-        </div>
+
+            <span class="logo-text uppercase italic ">Hygie+</span>
+
         <div>
             @if (Route::has('login'))
                 @auth
@@ -236,7 +235,7 @@
         <div class="hero-content">
            <h1>Bienvenue dans l'écosystème <br><span style="color: var(--primary);">Hygie+</span></h1>
 <p>Fluidifier le dernier kilomètre pharmaceutique grâce à une mise en relation haute performance.</p>
-            
+
         </div>
     </div>
 

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hygie+ | {{ ucfirst(Auth::user()->role) }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
 </head>
 <body class="font-sans antialiased bg-[#F8FAFC]" x-data="{ sidebarOpen: true }">
     <div class="flex h-screen overflow-hidden">
@@ -12,7 +13,7 @@
         <aside :class="sidebarOpen ? 'w-72' : 'w-20'" class="bg-[#064E3B] text-white transition-all duration-300 flex flex-col shrink-0 z-30 shadow-2xl">
 
             <div class="h-20 flex items-center px-6 border-b border-white/10 shrink-0">
-                <div class="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#064E3B] font-black shadow-lg shrink-0 text-lg">H+</div>
+
                 <span x-show="sidebarOpen" class="ml-3 font-black text-xl tracking-tighter transition-all italic uppercase">
                     HYGIE+ <span class="text-green-400 font-light text-[10px] block leading-none tracking-widest">{{ Auth::user()->role }}</span>
                 </span>
@@ -49,10 +50,27 @@
                 @if(Auth::user()->role === 'pharmacie')
                     <div class="pt-2 pb-2">
                         <p x-show="sidebarOpen" class="px-4 text-[10px] font-black text-green-400 uppercase tracking-widest mb-3 opacity-50 italic">Ma Pharmacie</p>
-                        <a href="#" class="flex items-center p-3 text-green-100 hover:bg-white/5 border-l-4 border-transparent rounded-r-xl transition-all">
+                        <a href="{{ route('pharmacie.commandes') }}" class="flex items-center p-3 text-green-100 hover:bg-white/5 border-l-4 border-transparent rounded-r-xl transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                             <span x-show="sidebarOpen" class="ml-4 font-bold text-sm">Mes Commandes</span>
                         </a>
+
+                        <a href="{{ route('pharmacie.stocks.index') }}"
+   class="flex items-center p-3 {{ request()->routeIs('pharmacie.stocks.*') ? 'bg-white/10 border-green-500' : 'text-green-100' }} hover:bg-white/5 border-l-4 border-transparent rounded-r-xl transition-all">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 11v10l8 4" />
+    </svg>
+    <span x-show="sidebarOpen" class="ml-4 font-bold text-sm">Mon Stock</span>
+</a>
+
+<a href="{{ route('pharmacie.livreurs.index') }}"
+   class="flex items-center p-3 {{ request()->routeIs('pharmacie.livreurs.*') ? 'bg-white/10 border-green-500' : 'text-green-100' }} hover:bg-white/5 border-l-4 border-transparent rounded-r-xl transition-all">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+    </svg>
+    <span x-show="sidebarOpen" class="ml-4 font-bold text-sm">Mes Livreurs</span>
+</a>
                     </div>
                 @endif
 
@@ -109,5 +127,6 @@
             </main>
         </div>
     </div>
+    @flasher_render
 </body>
 </html>

@@ -7,26 +7,20 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 class Kernel extends HttpKernel
 {
     /**
-     * The application's global HTTP middleware stack.
-     *
-     * These middleware are run during every request to your application.
-     *
-     * @var array<int, class-string|string>
+     * Global HTTP middleware — exécuté à chaque requête
      */
     protected $middleware = [
-        // \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\Cors::class,
     ];
 
     /**
-     * The application's route middleware groups.
-     *
-     * @var array<string, array<int, class-string|string>>
+     * Groupes de middleware
      */
     protected $middlewareGroups = [
         'web' => [
@@ -39,34 +33,36 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
-            \Illuminate\Routing\Middleware\ThrottleRequests::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
 
     /**
-     * The application's middleware aliases.
-     *
-     * Aliases may be used to conveniently assign middleware to routes and groups.
-     *
-     * @var array<string, class-string|string>
+     * Alias de middleware pour les routes
      */
     protected $middlewareAliases = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
-        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'signed' => \App\Http\Middleware\ValidateSignature::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'admin' => \App\Http\Middleware\AdminMiddleware::class,
-        'pharmacie' => \App\Http\Middleware\PharmacieMiddleware::class,
-         'livreur' => \App\Http\Middleware\LivreurMiddleware::class,
-            'prevent.back.history' => \App\Http\Middleware\PreventBackHistory::class,
+        // Laravel natif
+        'auth'                => \App\Http\Middleware\Authenticate::class,
+        'auth.basic'          => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+        'auth.session'        => \Illuminate\Session\Middleware\AuthenticateSession::class,
+        'cache.headers'       => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+        'can'                 => \Illuminate\Auth\Middleware\Authorize::class,
+        'guest'               => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'password.confirm'    => \Illuminate\Auth\Middleware\RequirePassword::class,
+        'signed'              => \App\Http\Middleware\ValidateSignature::class,
+        'throttle'            => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'verified'            => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+
+        // Middleware personnalisés
+        'prevent.back.history' => \App\Http\Middleware\PreventBackHistory::class,
+        'role'                 => \App\Http\Middleware\CheckRole::class,
+
+        // Anciens middleware (gardés pour ne rien casser)
+        'admin'               => \App\Http\Middleware\AdminMiddleware::class,
+        'pharmacie'           => \App\Http\Middleware\PharmacieMiddleware::class,
+        'livreur'             => \App\Http\Middleware\LivreurMiddleware::class,
+
+
     ];
 }

@@ -13,7 +13,7 @@ class Livreur extends Model
     use HasApiTokens, Notifiable;
 
     protected $fillable = [
-        'user_id', 'telephone', 'vehicule', 'matricule', 'statut'
+        'user_id', 'pharmacie_id','telephone', 'vehicule', 'matricule', 'statut'
     ];
 
     protected $hidden = [

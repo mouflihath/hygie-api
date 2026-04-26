@@ -40,6 +40,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'pharmacie' => [ // Nouveau guard
+        'driver' => 'session',
+        'provider' => 'pharmacies',
+    ],
     ],
 
     /*
@@ -64,6 +69,11 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
+
+        'pharmacies' => [ // Nouveau provider
+        'driver' => 'eloquent',
+        'model' => App\Models\Pharmacie::class,
+    ],
 
         // 'users' => [
         //     'driver' => 'database',

@@ -31,4 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'fedapay' => [
+    'secret_key' => env('FEDAPAY_SECRET_KEY', 'sk_sandbox_zxcOxe9DYEWX8_qKziuveaAj'),
+    'environment' => env('FEDAPAY_ENVIRONMENT', 'sandbox'),
+],
 ];

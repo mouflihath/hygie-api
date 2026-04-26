@@ -3,31 +3,52 @@
 namespace App\Http\Controllers\Pharmacie;
 
 use App\Http\Controllers\Controller;
+use App\Models\Commande;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    /**
-     * Affiche le dashboard pour le partenaire pharmacie.
-     */
     public function index()
     {
-        // 1. On récupère l'utilisateur connecté (le compte User)
-        $user = Auth::user();
+        $pharmacie   = Auth::user()->pharmacie;
+        $pharmacieId = $pharmacie?->id ?? 0;
 
-        // 2. On récupère les détails de la pharmacie associée
-        // Note: Cela nécessite que la relation soit définie dans ton modèle User
-        $pharmacie = $user->pharmacie;
+        $commandes = Commande::where('pharmacie_id', $pharmacieId)
+            ->with(['lignes', 'patient'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        // 3. Sécurité : si pour une raison X l'utilisateur n'a pas de profil pharmacie
-        if (!$pharmacie) {
-            return redirect()->route('home')->with('error', 'Profil pharmacie introuvable.');
+        $commandesEnAttente = $commandes->where('etat_commande', 'en_attente')->count();
+        $totalLivrees       = $commandes->where('etat_commande', 'livre')->count();
+        $totalCommandes     = $commandes->count();
+
+        $totalProduits = DB::table('stocks')
+            ->where('pharmacie_id', $pharmacieId)
+            ->sum('quantite');
+
+        return view('pharmacie.dashboard', compact(
+            'commandes',
+            'commandesEnAttente',
+            'totalLivrees',
+            'totalCommandes',
+            'totalProduits',
+            'pharmacie'
+        ));
+    }
+
+    public function updateStatut(Request $request, $id)
+    {
+        $commande = Commande::findOrFail($id);
+
+        if ($commande->pharmacie_id !== Auth::user()->pharmacie?->id) {
+            abort(403);
         }
 
-        // 4. Tu peux ajouter ici des statistiques (ex: nombre de commandes)
-        // $commandesRecentes = $pharmacie->commandes()->latest()->take(5)->get();
+        $commande->statut = $request->statut;
+       // $commande->save();
 
-        return view('pharmacie.dashboard', compact('user', 'pharmacie'));
+        return back()->with('success', 'Statut mis à jour.');
     }
 }

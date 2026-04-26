@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('pharmacie_id')->constrained()->onDelete('cascade');
             $table->foreignId('livreur_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('statut', ['en_attente', 'confirmee', 'en_preparation', 'en_livraison', 'livree']);
-            $table->enum('mode_livraison', ['retrait', 'livraison_pharmacie', 'livraison_hygie']);
+           $table->string('mode_livraison')->change();
             $table->decimal('montant_total', 10, 2)->default(0);
             $table->timestamps();
         });

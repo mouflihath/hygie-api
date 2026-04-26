@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,27 +22,25 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    // app/Http/Controllers/Auth/AuthenticatedSessionController.php
-public function store(LoginRequest $request): RedirectResponse
-{
-    $request->authenticate();
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        $request->authenticate();
 
-    $request->session()->regenerate();
+        $request->session()->regenerate();
 
-    // LOGIQUE DE REDIRECTION SELON LE RÔLE
-    $user = auth()->user();
+        $user = auth()->user();
 
-    if ($user->role === 'admin') {
-        return redirect()->intended(route('admin.dashboard'));
+        if ($user->role === 'admin') {
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
+        if ($user->role === 'pharmacie') {
+            return redirect()->intended(route('pharmacie.dashboard'));
+        }
+
+        // Fallback si le rôle n'est pas reconnu
+        return redirect('/');
     }
-
-    if ($user->role === 'pharmacie') {
-        return redirect()->intended(route('pharmacie.dashboard'));
-    }
-
-    return redirect()->intended(RouteServiceProvider::HOME);
-}
-
 
     /**
      * Destroy an authenticated session.

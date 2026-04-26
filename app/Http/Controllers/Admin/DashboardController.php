@@ -1,27 +1,43 @@
 <?php
+// ════════════════════════════════════════════════════════════════════════════
+// app/Http/Controllers/Admin/AdminDashboardController.php
+// Alimente le dashboard admin avec stats réelles
+// ════════════════════════════════════════════════════════════════════════════
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\Commande;
-use App\Models\Notification;
+use App\Models\User;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-  public function index()
-    {
-        $pharmacies = User::where('role', 'pharmacie')->latest()->get();
+   public function index()
+{
+    // On utilise le Query Builder pour les stats simples (plus rapide)
+    $pharmacies = DB::table('pharmacies')->get();
 
-    // Statistiques avec les bons noms de colonnes
     $totalCommandes = Commande::count();
-    $revenuTotal = Commande::where('statut', 'livree')->sum('montant_total');
+    $commandesAujourdhui = Commande::whereDate('created_at', today())->count();
 
-    // Récupérer les notifications (messages)
-    $commentaires = Notification::with('user')->latest()->take(4)->get();
+    // On s'assure que si sum() renvoie null, on affiche 0
+    $revenuTotal = Commande::sum('commission_application') ?? 0;
+    $revenuAujourdhui = Commande::whereDate('created_at', today())->sum('commission_application') ?? 0;
 
-    return view('admin.dashboard', compact('pharmacies', 'totalCommandes', 'revenuTotal', 'commentaires'));
-    }
+    $totalPatients = User::whereHas('patient')->count();
 
+    $commandesRecentes = Commande::with('pharmacie')
+        ->orderByDesc('created_at')
+        ->limit(30)
+        ->get();
+
+
+
+    return view('admin.dashboard', compact(
+        'pharmacies', 'totalCommandes', 'commandesAujourdhui',
+        'revenuTotal', 'revenuAujourdhui', 'totalPatients',
+        'commandesRecentes'
+    ));
+}
 }

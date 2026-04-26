@@ -13,7 +13,7 @@ class Stock extends Model
 {
     return $this->belongsTo(Pharmacie::class);
 }
-
+protected $fillable = ['pharmacie_id', 'medicament_id', 'quantite', 'prix'];
 public function medicament()
 {
     return $this->belongsTo(Medicament::class);

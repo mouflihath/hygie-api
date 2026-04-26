@@ -21,10 +21,7 @@ public function commandes()
     return $this->hasMany(Commande::class);
 }
 
-public function ordonnances()
-{
-    return $this->hasMany(Ordonnance::class);
-}
+
 
 protected $fillable = [
         'user_id', 'telephone', 'adresse'

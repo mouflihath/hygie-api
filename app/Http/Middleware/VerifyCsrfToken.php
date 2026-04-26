@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'api/webhooks/fedapay',
+        'api/commander', // Utile si tu testes sans jeton depuis un outil externe
     ];
 }

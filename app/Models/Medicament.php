@@ -19,4 +19,5 @@ public function ligneCommandes()
     return $this->hasMany(LigneCommande::class);
 }
 
+protected $fillable = ['nom', 'description', 'image'];
 }

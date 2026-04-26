@@ -19,4 +19,11 @@ public function medicament()
     return $this->belongsTo(Medicament::class);
 }
 
+protected  $fillable = [
+    'commande_id',
+    'medicament_id',
+   'nom',
+    'quantite',
+    'prix_unitaire'
+];
 }
