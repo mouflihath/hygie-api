@@ -12,10 +12,33 @@ use Illuminate\Support\Facades\Storage;
 
 class PharmacyController extends Controller
 {
+    /**
+     * Liste des principales villes du Bénin
+     */
+    private function getVillesBenin()
+    {
+        return [
+            'Cotonou',
+            'Abomey-Calavi',
+            'Porto-Novo',
+            'Parakou',
+            'Bohicon',
+            'Abomey',
+            'Ouidah',
+            'Natitingou',
+            'Kandi',
+            'Dassa-Zoumé',
+            'Lokossa',
+            'Allada'
+        ];
+    }
+
     public function index()
     {
         $pharmacies = Pharmacie::with('user')->latest()->get();
-        return view('admin.pharmacies', compact('pharmacies'));
+        $villes = $this->getVillesBenin(); // On passe la liste des villes à la vue
+
+        return view('admin.pharmacies', compact('pharmacies', 'villes'));
     }
 
     public function store(Request $request)
@@ -40,7 +63,7 @@ class PharmacyController extends Controller
             ]);
 
             $imagePath = null;
-            if ($request->hasFile('image')) {
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
                 $imagePath = $request->file('image')->store('logos', 'public');
             }
 
@@ -67,6 +90,7 @@ class PharmacyController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'telephone' => 'required|string',
             'ville' => 'required|string',
+            'image' => 'nullable|image|max:5120', // Validation ajoutée pour la modif
         ]);
 
         DB::transaction(function () use ($request, $pharmacie, $user) {
@@ -88,10 +112,13 @@ class PharmacyController extends Controller
                 'telephone' => $request->telephone,
             ];
 
-            if ($request->hasFile('image')) {
+            // Traitement sécurisé du fichier image
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                // Supprimer l'ancien logo si existant
                 if ($pharmacie->image) {
                     Storage::disk('public')->delete($pharmacie->image);
                 }
+                // Stocker le nouveau logo
                 $data['image'] = $request->file('image')->store('logos', 'public');
             }
 
@@ -116,12 +143,9 @@ class PharmacyController extends Controller
         return redirect()->back()->with('success', 'Partenaire supprimé.');
     }
 
-    // Cette méthode servira à ton Front-end React
-public function getPharmaciesForApi()
-{
-    // On récupère les pharmacies validées avec les infos de l'utilisateur lié
-    $pharmacies = Pharmacie::where('validee', true)->with('user')->latest()->get();
-
-    return response()->json($pharmacies, 200);
-}
+    public function getPharmaciesForApi()
+    {
+        $pharmacies = Pharmacie::where('validee', true)->with('user')->latest()->get();
+        return response()->json($pharmacies, 200);
+    }
 }

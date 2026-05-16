@@ -110,13 +110,16 @@
                     </div>
                     <input type="password" name="password" placeholder="MOT DE PASSE" class="w-full bg-gray-50 border-none rounded-[1.5rem] p-5 font-bold" required>
                     <div class="grid grid-cols-2 gap-5">
-                        <select name="ville" class="w-full bg-gray-50 border-none rounded-[1.5rem] p-5 font-bold">
-                            <option value="Cotonou">COTONOU</option>
-                            <option value="Calavi">CALAVI</option>
+                        {{-- Villes dynamiques issues du contrôleur --}}
+                        <select name="ville" class="w-full bg-gray-50 border-none rounded-[1.5rem] p-5 font-bold" required>
+                            <option value="" disabled selected>CHOISIR VILLE</option>
+                            @foreach($villes ?? [] as $ville)
+                                <option value="{{ $ville }}">{{ strtoupper($ville) }}</option>
+                            @endforeach
                         </select>
                         <input type="text" name="adresse" placeholder="ADRESSE" class="w-full bg-gray-50 border-none rounded-[1.5rem] p-5 font-bold uppercase">
                     </div>
-                    <input type="file" name="image" class="w-full text-[10px]">
+                    <input type="file" name="image" class="w-full text-[10px]" accept="image/*">
                     <button type="submit" class="w-full bg-[#064E3B] text-white py-6 rounded-[2rem] font-black uppercase shadow-xl hover:bg-black transition-all">Enregistrer</button>
                 </form>
             </div>
@@ -137,14 +140,18 @@
                         <input type="text" name="telephone" x-model="currentPh.tel" class="w-full bg-gray-50 border-none rounded-[1.5rem] p-5 font-bold" required>
                     </div>
                     <div class="grid grid-cols-2 gap-5">
-                        <select name="ville" x-model="currentPh.ville" class="w-full bg-gray-50 border-none rounded-[1.5rem] p-5 font-bold">
-                            <option value="Cotonou">COTONOU</option>
-                            <option value="Calavi">CALAVI</option>
-                            <option value="Cotonou">PARAKOU</option>
-                            <option value="Calavi">PORTO-NOVO</option>
-
+                        {{-- Villes dynamiques liées avec AlpineJS x-model --}}
+                        <select name="ville" x-model="currentPh.ville" class="w-full bg-gray-50 border-none rounded-[1.5rem] p-5 font-bold" required>
+                            @foreach($villes ?? [] as $ville)
+                                <option value="{{ $ville }}">{{ strtoupper($ville) }}</option>
+                            @endforeach
                         </select>
                         <input type="text" name="adresse" x-model="currentPh.quartier" class="w-full bg-gray-50 border-none rounded-[1.5rem] p-5 font-bold uppercase">
+                    </div>
+                    {{-- AJOUT : Input file pour modifier l'image --}}
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider block pl-2">Modifier le logo (optionnel)</label>
+                        <input type="file" name="image" class="w-full text-[10px]" accept="image/*">
                     </div>
                     <button type="submit" class="w-full bg-black text-white py-6 rounded-[2rem] font-black uppercase shadow-xl hover:bg-[#064E3B] transition-all">Sauvegarder</button>
                 </form>
