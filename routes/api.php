@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Admin\PharmacyController;
 use App\Http\Controllers\Api\PharmacyController as ApiPharmacyController;
 use App\Http\Controllers\Api\WebhookController;
+
 // ── ROUTES PUBLIQUES ──────────────────────────────────────────────────────────
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
@@ -28,6 +29,7 @@ Route::put('/commandes/{id}/statut',    [CommandeController::class, 'updateStatu
 // Webhook FedaPay — GET car FedaPay redirige le navigateur
 Route::get('/webhooks/fedapay', [WebhookController::class, 'handleFedaPay']);
 Route::post('/webhooks/fedapay', [WebhookController::class, 'handleFedaPay']);
+Route::post('/contact', [App\Http\Controllers\Api\ContactController::class, 'store']);
 // ── ROUTES PROTÉGÉES (Sanctum) ────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 

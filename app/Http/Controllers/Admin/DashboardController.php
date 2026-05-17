@@ -1,10 +1,10 @@
 <?php
-// app/Http/Controllers/Admin/AdminDashboardController.php
 
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Commande;
 use App\Models\User;
+use App\Models\Contact; // ✅ AJOUTÉ
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 
@@ -12,7 +12,6 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Stats simples
         $pharmacies = DB::table('pharmacies')->get();
         $totalCommandes = Commande::count();
         $commandesAujourdhui = Commande::whereDate('created_at', today())->count();
@@ -22,15 +21,18 @@ class DashboardController extends Controller
 
         $totalPatients = User::whereHas('patient')->count();
 
-        // FORCE LA RÉCUPÉRATION : On s'assure d'embarquer la relation 'pharmacie'
         $commandesRecentes = Commande::with(['pharmacie'])
             ->orderByDesc('created_at')
             ->simplePaginate(5);
 
+        // ✅ AJOUTÉ — récupère les derniers commentaires
+        $commentaires = Contact::orderByDesc('created_at')->limit(8)->get();
+
         return view('admin.dashboard', compact(
             'pharmacies', 'totalCommandes', 'commandesAujourdhui',
             'revenuTotal', 'revenuAujourdhui', 'totalPatients',
-            'commandesRecentes'
+            'commandesRecentes',
+            'commentaires' // ✅ AJOUTÉ
         ));
     }
 }
