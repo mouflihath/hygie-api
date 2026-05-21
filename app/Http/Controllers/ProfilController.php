@@ -23,6 +23,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
+        // ── Mise à jour nom / email ───────────────────────────────────────────
         $user->fill($request->validated());
 
         if ($user->isDirty('email')) {
@@ -37,9 +38,11 @@ class ProfileController extends Controller
 
         // ── Upload nouvelle photo ─────────────────────────────────────────────
         if ($request->hasFile('photo_profil')) {
+            // Supprimer l'ancienne si elle existe
             if ($user->photo_profil) {
                 Storage::disk('public')->delete($user->photo_profil);
             }
+
             $path = $request->file('photo_profil')->store('photos-profil', 'public');
             $user->photo_profil = $path;
         }
@@ -57,6 +60,7 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // Supprimer la photo avant de supprimer le compte
         if ($user->photo_profil) {
             Storage::disk('public')->delete($user->photo_profil);
         }

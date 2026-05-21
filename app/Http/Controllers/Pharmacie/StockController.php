@@ -12,7 +12,10 @@ class StockController extends Controller
     public function index()
     {
         $pharmacieId = Auth::user()->pharmacie->id;
-        $stocks = Stock::with('medicament')->where('pharmacie_id', $pharmacieId)->get();
+        $stocks = Stock::with('medicament')
+            ->where('pharmacie_id', $pharmacieId)
+            ->whereHas('medicament')
+            ->get();
         $medicaments = Medicament::all(); // Pour le formulaire d'ajout
 
         return view('pharmacie.stocks.index', compact('stocks', 'medicaments'));

@@ -6,7 +6,7 @@
     <title>Hygie+ | L'excellence en logistique santé</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -17,7 +17,7 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'DM', sans-serif;
             margin: 0;
             background-color: #ffffff;
         }
@@ -45,13 +45,15 @@
         }
 
         .logo-text {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            color: white;
-            transition: color 0.3s;
-        }
-
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: white;
+    transition: color 0.3s;
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif; /* ← ajout */
+    font-style: normal; /* ← supprime l'italic */
+    text-transform: none; /* ← supprime le uppercase */
+}
         nav.scrolled .logo-text { color: var(--primary-dark); }
 
         .nav-btn {
@@ -123,12 +125,13 @@
         }
 
         .hero-content h1 {
-            font-size: clamp(3rem, 8vw, 5rem);
-            font-weight: 800;
-            line-height: 1;
-            margin-bottom: 1.5rem;
-            letter-spacing: -2px;
-        }
+    font-size: clamp(3rem, 8vw, 5rem);
+
+    line-height: 1;
+    margin-bottom: 1.5rem;
+    letter-spacing: -2px;
+    font-family: 'DM Sans', sans-serif; /* ← ajout */
+}
 
         .hero-content p {
             font-size: 1.2rem;
@@ -173,7 +176,7 @@
         .btn-role b {
             font-size: 0.9rem;
             letter-spacing: 2px;
-            font-weight: 800;
+
         }
 
         /* SECTION ARGUMENTS */
@@ -206,7 +209,7 @@
 
     <nav id="navbar">
 
-            <span class="logo-text uppercase italic ">Hygie+</span>
+            <span class="logo-text">Hygie<span style="color: #4ade80;">+</span></span>
 
         <div>
             @if (Route::has('login'))
@@ -233,23 +236,21 @@
         </div>
 
         <div class="hero-content">
-           <h1>Bienvenue dans l'écosystème <br><span style="color: var(--primary);">Hygie+</span></h1>
-<p>Fluidifier le dernier kilomètre pharmaceutique grâce à une mise en relation haute performance.</p>
-
+          <h1>Bienvenue dans l'écosystème <br><span style="color: var(--primary);">Hygie+</span></h1>
         </div>
     </div>
 
     <div class="features">
         <div style="max-width: 1200px; margin: 0 auto;">
             <div style="text-align: center; margin-bottom: 80px;">
-                <h2 style="font-size: 3rem; font-weight: 800; color: var(--primary-dark); letter-spacing: -1.5px;">Une expertise au service du patient</h2>
+                <h2 style="font-size: 3rem; color: var(--primary-dark); letter-spacing: -1.5px;">Une expertise au service du patient</h2>
                 <div style="width: 60px; height: 6px; background: var(--primary); margin: 20px auto; border-radius: 10px;"></div>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;">
     <div class="feature-card">
         <div style="font-size: 2.5rem; margin-bottom: 20px;">⚡</div>
-        <h3 style="font-weight: 800; font-size: 1.5rem; margin-bottom: 15px;">Réactivité Opérationnelle</h3>
+        <h3 style="; font-size: 1.5rem; margin-bottom: 15px;">Réactivité Opérationnelle</h3>
         <p style="color: #64748b; line-height: 1.7;">
             Algorithme d'appairage intelligent minimisant le temps d'attente entre la préparation de commande et la prise en charge.
         </p>
@@ -257,7 +258,7 @@
 
     <div class="feature-card">
         <div style="font-size: 2.5rem; margin-bottom: 20px;">🛡️</div>
-        <h3 style="font-weight: 800; font-size: 1.5rem; margin-bottom: 15px;">Sécurité & Conformité</h3>
+        <h3 style="; font-size: 1.5rem; margin-bottom: 15px;">Sécurité & Conformité</h3>
         <p style="color: #64748b; line-height: 1.7;">
             Garantie de l'intégrité des produits thermosensibles et respect strict des bonnes pratiques de distribution (BPD).
         </p>
@@ -265,7 +266,7 @@
 
     <div class="feature-card">
         <div style="font-size: 2.5rem; margin-bottom: 20px;">📈</div>
-        <h3 style="font-weight: 800; font-size: 1.5rem; margin-bottom: 15px;">Traçabilité de Bout en Bout</h3>
+        <h3 style="; font-size: 1.5rem; margin-bottom: 15px;">Traçabilité de Bout en Bout</h3>
         <p style="color: #64748b; line-height: 1.7;">
             Suivi géolocalisé en temps réel et horodatage certifié de chaque étape, du retrait en officine jusqu'à la remise au patient.
         </p>

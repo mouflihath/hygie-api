@@ -25,11 +25,16 @@ Route::post('/commander', [CommandeController::class, 'store']);
 // Dashboard pharmacie — commandes d'une pharmacie
 Route::get('/pharmacie/{id}/commandes', [CommandeController::class, 'commandesPharmacie']);
 Route::put('/commandes/{id}/statut',    [CommandeController::class, 'updateStatut']);
-// Route Webhook (Attention : exclure cette route du CSRF dans VerifyCsrfToken.php)
+
+// Vérification du statut d'une commande (utilisé par le modal de suivi côté patient)
+Route::get('/commandes/{id}/statut',    [CommandeController::class, 'getStatut']);
+
 // Webhook FedaPay — GET car FedaPay redirige le navigateur
-Route::get('/webhooks/fedapay', [WebhookController::class, 'handleFedaPay']);
+Route::get('/webhooks/fedapay',  [WebhookController::class, 'handleFedaPay']);
 Route::post('/webhooks/fedapay', [WebhookController::class, 'handleFedaPay']);
+
 Route::post('/contact', [App\Http\Controllers\Api\ContactController::class, 'store']);
+
 // ── ROUTES PROTÉGÉES (Sanctum) ────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 

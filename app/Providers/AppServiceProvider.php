@@ -35,5 +35,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('livreur-access', function ($user) {
             return $user->role === 'livreur';
         });
+
+        
     }
 }

@@ -20,8 +20,8 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $commandesEnAttente = $commandes->where('etat_commande', 'en_attente')->count();
-        $totalLivrees       = $commandes->where('etat_commande', 'livre')->count();
+        $commandesEnAttente = $commandes->where('statut', 'en_attente')->count();
+        $totalLivrees       = $commandes->where('statut', 'livree')->count();
         $totalCommandes     = $commandes->count();
 
         $totalProduits = DB::table('stocks')
@@ -42,13 +42,22 @@ class DashboardController extends Controller
     {
         $commande = Commande::findOrFail($id);
 
+        // Sécurité : Vérifie que la commande appartient bien à la pharmacie connectée
         if ($commande->pharmacie_id !== Auth::user()->pharmacie?->id) {
             abort(403);
         }
 
-        $commande->statut = $request->statut;
-       // $commande->save();
+        // Validation simple pour s'assurer que la valeur envoyée est correcte
+        $request->validate([
+            'statut' => 'required|string|in:en_attente,en_preparation,en_livraison,a_retirer,livree'
+        ]);
 
-        return back()->with('success', 'Statut mis à jour.');
+        // ATTENTION : Si ta colonne en Base de Données s'appelle 'statut', remplace 'etat_commande' à gauche par 'statut'
+        $commande->statut = $request->input('statut');
+
+        // On retire les slashs pour que ça sauvegarde enfin en BDD !
+        $commande->save();
+
+        return back()->with('success', 'Le statut de la commande a bien été mis à jour.');
     }
 }

@@ -6,8 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Commande;
 use App\Models\LigneCommande;
+use App\Models\Patient;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CommandeController extends Controller
 {
@@ -42,23 +47,62 @@ class CommandeController extends Controller
 
             $token = $transaction->generateToken();
 
-            // ✅ Récupère l'utilisateur connecté si disponible
-            $patientId = null;
-            $token_auth = $request->header('Authorization');
-            if ($token_auth) {
-                $tokenValue = str_replace('Bearer ', '', $token_auth);
-                $personalToken = DB::table('personal_access_tokens')
-                    ->where('token', hash('sha256', $tokenValue))
-                    ->first();
-                if ($personalToken) {
-                    $patientId = $personalToken->tokenable_id;
+            $patientId = Auth::id();
+            if (!$patientId) {
+                $token_auth = $request->header('Authorization');
+                if ($token_auth) {
+                    $tokenValue = str_replace('Bearer ', '', $token_auth);
+                    $personalToken = DB::table('personal_access_tokens')
+                        ->where('token', hash('sha256', $tokenValue))
+                        ->first();
+                    if ($personalToken) {
+                        $patientId = $personalToken->tokenable_id;
+                    }
                 }
             }
 
-            // ✅ Crée la commande avec pharmacie_id correct
+            $clientName = trim(($request->client_nom ?? $request->name ?? '') . ' ' . ($request->client_prenom ?? $request->surname ?? ''));
+            $clientName = $clientName ?: ($request->client_nom ?? $request->name ?? $request->client_prenom ?? $request->surname ?? 'Client');
+            $clientEmail = $request->client_email ?? $request->email ?? $request->clientEmail ?? $request->email_client ?? null;
+            $clientPhone = $request->client_tel ?? $request->client_telephone ?? $request->telephone ?? $request->phone ?? null;
+
+            if (!$patientId) {
+                $patientUser = null;
+                if ($clientEmail) {
+                    $patientUser = User::where('email', $clientEmail)
+                        ->where('role', 'patient')
+                        ->first();
+                }
+
+                if (!$patientUser) {
+                    $generatedEmail = $clientEmail;
+                    if (!$generatedEmail || User::where('email', $generatedEmail)->exists()) {
+                        $generatedEmail = 'guest+' . Str::random(16) . '@hygieplus.local';
+                    }
+
+                    [$firstName, $lastName] = array_pad(explode(' ', $clientName, 2), 2, 'Client');
+
+                    $patientUser = User::create([
+                        'name'     => $firstName ?: 'Client',
+                        'surname'  => $lastName ?: 'Client',
+                        'email'    => $generatedEmail,
+                        'password' => Hash::make(Str::random(24)),
+                        'role'     => 'patient',
+                    ]);
+
+                    Patient::create([
+                        'user_id'   => $patientUser->id,
+                        'telephone' => $clientPhone,
+                        'adresse'   => $request->adresse ?? 'Non précisée',
+                    ]);
+                }
+
+                $patientId = $patientUser->id;
+            }
+
             $commande = Commande::create([
                 'pharmacie_id'           => $request->pharmacie_id ?? 1,
-                'patient_id'             => $patientId ?? 1,
+                'patient_id'             => $patientId,
                 'reference_commande'     => $request->reference_commande,
                 'montant_pharmacie'      => $request->montant_pharmacie,
                 'commission_application' => $request->commission_application,
@@ -68,20 +112,16 @@ class CommandeController extends Controller
                 'fedapay_transaction_id' => $transaction->id,
                 'statut_paiement'        => 'en_attente',
                 'statut'                 => 'en_attente',
-               // 'etat_commande'          => 'en_attente',
-                //'patient_nom'            => $request->client_nom,
-               // 'patient_telephone'      => $request->client_tel,
             ]);
 
-            // ✅ Enregistre les lignes de commande (médicaments)
             if ($request->has('medicaments') && is_array($request->medicaments)) {
                 foreach ($request->medicaments as $med) {
                     LigneCommande::create([
-                        'commande_id' => $commande->id,
+                        'commande_id'   => $commande->id,
                         'medicament_id' => $med['id'] ?? null,
-                        'nom'         => $med['nom'] ?? $med['name'] ?? 'Médicament',
-                        'quantite'    => $med['qte'] ?? 1,
-                        'prix'        => $med['prix'] ?? 0,
+                        'nom'           => $med['nom'] ?? $med['name'] ?? 'Médicament',
+                        'quantite'      => $med['qte'] ?? 1,
+                        'prix'          => $med['prix'] ?? 0,
                     ]);
                 }
             }
@@ -119,10 +159,32 @@ class CommandeController extends Controller
         return response()->json($commandes);
     }
 
-    public function updateStatut(Request $request, $id)
+    /**
+     * Retourne uniquement le statut d'une commande.
+     * GET /api/commandes/{id}/statut
+     */
+    public function getStatut($id)
     {
         $commande = Commande::findOrFail($id);
-        $commande->update(['etat_commande' => $request->statut]);
+
+        return response()->json([
+            'statut' => $commande->statut,
+        ]);
+    }
+
+    public function updateStatut(Request $request, $id)
+    {
+        $request->validate([
+            'statut' => 'required|string|in:en_attente,en_preparation,en_livraison,a_retirer,livree'
+        ]);
+
+        $commande = Commande::findOrFail($id);
+        $newStatut = $request->statut;
+        $commande->update([
+            'etat_commande' => $newStatut,
+            'statut'        => $newStatut,
+        ]);
+
         return response()->json(['success' => true, 'commande' => $commande]);
     }
 }

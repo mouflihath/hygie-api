@@ -33,7 +33,7 @@ class Commande extends Model
         'patient_nom',
         'patient_telephone',
         'fedapay_transaction_id',
-      
+
     ];
 
     // ── RELATIONS ────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ class Commande extends Model
 
     public function pharmacie(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'pharmacie_id');
+        return $this->belongsTo(Pharmacie::class, 'pharmacie_id');
     }
 
     public function livreur(): BelongsTo

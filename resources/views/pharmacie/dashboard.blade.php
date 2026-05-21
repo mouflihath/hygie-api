@@ -1,248 +1,299 @@
 <x-app-layout>
-    <div class="p-8 bg-[#F8FAFC] min-h-screen">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-        {{-- HEADER --}}
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-            <div>
-                <div class="flex items-center gap-4">
-                    <h2 class="text-4xl font-black text-[#064E3B] tracking-tighter uppercase italic leading-none">
-                        {{ Auth::user()->pharmacie->nom_pharmacie ?? 'Ma Pharmacie' }}
-                    </h2>
-                    <span class="bg-[#10B981]/10 text-[#10B981] text-[10px] px-3 py-1 rounded-full font-black border border-[#10B981]/20 uppercase tracking-widest">
-                        Compte Officiel
-                    </span>
-                </div>
-                <p class="text-gray-400 font-bold text-sm mt-2 flex items-center gap-2">
-                    <span class="text-[#10B981]">📍</span>
-                    {{ Auth::user()->pharmacie->ville ?? 'Cotonou' }}, {{ Auth::user()->pharmacie->adresse ?? 'Bénin' }}
-                </p>
-            </div>
-            <div class="text-right">
-                <p class="text-xs text-gray-400 font-bold">Dernière mise à jour</p>
-                <p class="text-sm font-black text-gray-600">{{ now()->format('d/m/Y à H:i') }}</p>
-            </div>
+<style>
+* { box-sizing: border-box; }
+.ph-dash-root {
+    font-family: 'DM Sans', sans-serif;
+    background: #F4F6F9;
+    min-height: 100vh;
+    padding: 40px 48px;
+}
+
+/* HEADER */
+.dash-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 36px;
+}
+.dash-header-left h2 {
+    font-size: 1.65rem; font-weight: 700; color: #0A1628;
+    letter-spacing: -0.5px; margin: 0 0 4px;
+}
+.dash-header-left p { font-size: 0.8rem; color: #94A3B8; font-weight: 500; margin: 0; }
+.dash-date {
+    font-size: 0.75rem; color: #94A3B8; font-weight: 600;
+    background: white; border: 1px solid #E8EDF5;
+    padding: 8px 16px; border-radius: 20px;
+}
+.header-meta {
+    text-align: right;
+}
+.header-meta .meta-label {
+    font-size: 0.65rem; font-weight: 700; color: #B0BAC9;
+    text-transform: uppercase; letter-spacing: 0.1em;
+}
+.header-meta .meta-val {
+    font-size: 0.78rem; font-weight: 600; color: #374151; margin-top: 3px;
+}
+
+/* STATS */
+.stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 20px; margin-bottom: 28px;
+}
+.stat-card {
+    background: white; border-radius: 20px; padding: 28px 26px;
+    border: 1px solid #EEF1F7; position: relative; overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.stat-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); transform: translateY(-2px); }
+.stat-card.accent { background: #064E3B; border-color: #064E3B; }
+.stat-card::before {
+    content: ''; position: absolute; top: -30px; right: -30px;
+    width: 90px; height: 90px; border-radius: 50%; background: rgba(0,0,0,0.03);
+}
+.stat-card.accent::before { background: rgba(255,255,255,0.05); }
+.stat-icon {
+    width: 38px; height: 38px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; margin-bottom: 18px;
+}
+.stat-label { font-size: 0.7rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.stat-card.accent .stat-label { color: rgba(255,255,255,0.5); }
+.stat-value { font-size: 1.9rem; font-weight: 700; color: #0A1628; letter-spacing: -1px; line-height: 1; margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+.stat-card.accent .stat-value { color: white; }
+.stat-sub { font-size: 0.7rem; color: #94A3B8; font-weight: 500; }
+.stat-card.accent .stat-sub { color: rgba(255,255,255,0.4); }
+.stat-sub b { color: #3B82F6; }
+.stat-card.accent .stat-sub b { color: #6EE7B7; }
+
+/* CARD */
+.card {
+    background: white; border-radius: 22px;
+    border: 1px solid #EEF1F7; overflow: hidden;
+}
+.card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 28px; border-bottom: 1px solid #F1F5F9;
+}
+.card-title {
+    font-size: 0.85rem; font-weight: 700; color: #0A1628;
+    display: flex; align-items: center; gap: 8px;
+}
+.card-title-dot { width: 8px; height: 8px; border-radius: 50%; background: #059669; }
+.live-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.65rem; font-weight: 700; color: #059669;
+    text-transform: uppercase; letter-spacing: 0.08em;
+}
+.live-dot {
+    width: 7px; height: 7px; background: #059669; border-radius: 50%;
+    animation: pulse-live 1.8s ease-in-out infinite;
+}
+@keyframes pulse-live {
+    0%,100% { box-shadow: 0 0 0 0 rgba(5,150,105,0.5); }
+    50%      { box-shadow: 0 0 0 6px rgba(5,150,105,0); }
+}
+.card-badge {
+    font-size: 0.65rem; font-weight: 700; color: #94A3B8;
+    background: #F4F6F9; padding: 5px 12px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* TABLE */
+.dash-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.dash-table thead tr { background: #FAFBFD; }
+.dash-table th {
+    padding: 13px 20px; font-size: 0.65rem; font-weight: 700;
+    color: #B0BAC9; text-transform: uppercase; letter-spacing: 0.1em;
+    text-align: left; border-bottom: 1px solid #F1F5F9;
+}
+.dash-table th.right { text-align: right; }
+.dash-table th.center { text-align: center; }
+.dash-table td {
+    padding: 14px 20px; color: #374151; font-weight: 500;
+    border-bottom: 1px solid #F8FAFC; vertical-align: middle;
+}
+.dash-table tr:last-child td { border-bottom: none; }
+.dash-table tr:hover td { background: #FAFBFF; }
+
+.ref-badge {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    background: #F4F6F9; color: #64748B;
+    padding: 4px 9px; border-radius: 7px; font-weight: 500;
+}
+.date-cell { font-size: 0.68rem; color: #94A3B8; margin-top: 4px; }
+.patient-name { font-weight: 600; color: #0A1628; }
+.patient-tel  { font-size: 0.7rem; color: #94A3B8; margin-top: 2px; }
+.amount-main { font-weight: 700; color: #0A1628; font-family: 'DM Mono', monospace; font-size: 0.78rem; }
+.mode-badge {
+    display: inline-flex; align-items: center;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.mode-livraison { background: #EFF6FF; color: #3B82F6; }
+.mode-retrait   { background: #F3E8FF; color: #8B5CF6; }
+
+.statut-select {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; border-radius: 10px; padding: 6px 12px;
+    border: 1.5px solid; cursor: pointer; outline: none;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s; appearance: none;
+}
+.sel-en_attente   { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+.sel-en_preparation { background: #FFF7ED; color: #EA580C; border-color: #FED7AA; }
+.sel-en_livraison { background: #EFF6FF; color: #3B82F6; border-color: #BFDBFE; }
+.sel-a_retirer    { background: #F3E8FF; color: #8B5CF6; border-color: #DDD6FE; }
+.sel-livree       { background: #ECFDF5; color: #059669; border-color: #A7F3D0; }
+
+.empty-row td {
+    padding: 60px 20px; text-align: center;
+    color: #C8D0DC; font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.15em;
+}
+
+/* TOAST */
+.toast {
+    position: fixed; bottom: 28px; right: 28px; z-index: 100;
+    background: #064E3B; color: white; padding: 14px 22px; border-radius: 14px;
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500;
+    box-shadow: 0 8px 32px rgba(5,150,105,0.2); border: 1px solid rgba(255,255,255,0.1);
+}
+.toast-dot { width: 8px; height: 8px; background: #6EE7B7; border-radius: 50%; flex-shrink: 0; }
+
+@media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2,1fr); } .ph-dash-root { padding: 24px; } }
+@media (max-width: 640px)  { .stats-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="ph-dash-root">
+
+    {{-- HEADER --}}
+    <div class="dash-header">
+        <div class="dash-header-left">
+            <h2>{{ Auth::user()->pharmacie->nom_pharmacie ?? 'Ma Pharmacie' }}</h2>
+            <p>📍 {{ Auth::user()->pharmacie->ville ?? 'Cotonou' }}, {{ Auth::user()->pharmacie->adresse ?? 'Bénin' }}</p>
         </div>
-
-        {{-- STATISTIQUES --}}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-
-            {{-- Stock --}}
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-2xl bg-green-50 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                    </div>
-                </div>
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Stock Médicaments</p>
-                <p class="text-4xl font-black text-[#064E3B] tracking-tighter">{{ $totalProduits ?? 0 }}</p>
-            </div>
-
-            {{-- Nouvelles commandes --}}
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50 relative">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                        </svg>
-                    </div>
-                </div>
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Nouvelles commandes</p>
-                <p class="text-4xl font-black text-blue-500 tracking-tighter">{{ $commandes->where('statut', 'en_attente')->count() }}</p>
-               
-            </div>
-
-            {{-- Total livrées --}}
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                </div>
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Total livrées</p>
-                <p class="text-4xl font-black text-gray-800 tracking-tighter">{{ $totalLivrees ?? 0}}</p>
-            </div>
-
-            {{-- Chiffre d'affaires --}}
-            <div class="bg-[#064E3B] p-8 rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(6,78,59,0.4)] text-white">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                </div>
-                <p class="text-[10px] font-black text-[#10B981] uppercase tracking-[0.2em] mb-1">Chiffre d'affaires</p>
-                <p class="text-xl font-black font-mono tracking-tighter">
-                    {{ number_format($commandes->sum('montant_pharmacie') ?? 0, 0, ',', ' ') }} FCFA
-                </p>
-            </div>
+        <div class="header-meta">
+            <div class="meta-label">Dernière synchro</div>
+            <div class="meta-val">{{ now()->format('d/m/Y à H:i') }}</div>
         </div>
-
-        {{-- TABLEAU DES COMMANDES --}}
-        <div class="bg-white rounded-[3rem] shadow-sm border border-gray-50 overflow-hidden">
-            <div class="p-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
-                <h3 class="font-black text-[#064E3B] text-xl uppercase tracking-tighter italic">
-                    Commandes reçues via Hygie+
-                </h3>
-                <div class="flex items-center gap-3">
-                    <span class="text-[9px] bg-green-50 text-green-600 px-3 py-1 rounded-full font-black uppercase border border-green-100">
-                        {{ $totalCommandes ?? 0 }} commandes
-                    </span>
-                    <span class="flex items-center gap-1 text-[9px] text-green-500 font-black">
-                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse inline-block"></span>
-                        LIVE
-                    </span>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50/50 text-[10px] uppercase font-black text-gray-400 tracking-[0.3em]">
-                        <tr>
-                            <th class="px-6 py-5">Référence</th>
-                            <th class="px-6 py-5">Patient</th>
-                            <th class="px-6 py-5">Médicaments</th>
-                            <th class="px-6 py-5">Mode</th>
-                            <th class="px-6 py-5">Paiement</th>
-                            <th class="px-6 py-5 text-right">Montant pharmacie</th>
-                            <th class="px-6 py-5">État</th>
-                            <th class="px-6 py-5">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-50">
-                        @forelse($commandes ?? [] as $cmd)
-                        <tr class="hover:bg-[#F0FDF4]/50 transition-all">
-
-                            {{-- Référence --}}
-                            <td class="px-6 py-5">
-                                <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded-lg text-gray-700">
-                                    {{ $cmd->reference_commande ?? '#' . $cmd->id }}
-                                </span>
-                            </td>
-
-                            {{-- Patient --}}
-                            <td class="px-6 py-5">
-                                <p class="font-black text-gray-800 text-sm">
-                                    {{ $cmd->patient_nom ?? ($cmd->patient->name ?? 'Patient') }}
-                                </p>
-                                <p class="text-[9px] text-gray-400 font-bold">
-                                    {{ $cmd->patient_telephone ?? '—' }}
-                                </p>
-                            </td>
-
-                            {{-- Médicaments --}}
-                            <td class="px-6 py-5">
-                                @if($cmd->lignes && $cmd->lignes->count() > 0)
-                                    @foreach($cmd->lignes as $ligne)
-                                        <div class="text-xs text-gray-600 mb-1">
-                                            <span class="font-bold">{{ $ligne->nom }}</span>
-                                            × {{ $ligne->quantite }}
-                                            <span class="text-gray-400 ml-1">{{ number_format($ligne->prix, 0, ',', ' ') }} F</span>
-                                        </div>
-                                    @endforeach
-                                @else
-                                    <span class="text-gray-400 text-xs italic">Non renseigné</span>
-                                @endif
-                            </td>
-
-                            {{-- Mode --}}
-                            <td class="px-6 py-5">
-                                <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
-                                    {{ $cmd->mode_livraison === 'livraison' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600' }}">
-                                    {{ $cmd->mode_livraison === 'livraison' ? '🚚 Livraison' : '🏪 Retrait' }}
-                                </span>
-                            </td>
-
-                            {{-- Paiement --}}
-                            <td class="px-6 py-5">
-                                <div class="flex flex-col gap-1">
-                                    <span class="text-xs font-bold uppercase
-                                        {{ ($cmd->statut_paiement ?? '') === 'payé' ? 'text-green-600' : 'text-amber-500' }}">
-                                        {{ ($cmd->statut_paiement ?? '') === 'payé' ? '✅ Payé' : '⏳ En attente' }}
-                                    </span>
-                                    @if($cmd->fedapay_transaction_id)
-                                        <span class="text-[9px] text-gray-400 font-mono">
-                                            ID: {{ $cmd->fedapay_transaction_id }}
-                                        </span>
-                                    @endif
-                                </div>
-                            </td>
-
-                            {{-- Montant pharmacie --}}
-                            <td class="px-6 py-5 text-right">
-                                <p class="font-black text-[#064E3B] text-sm">
-                                    {{ number_format($cmd->montant_pharmacie ?? $cmd->montant_total ?? 0, 0, ',', ' ') }} FCFA
-                                </p>
-                                @if($cmd->commission_application)
-                                    <p class="text-[9px] text-gray-400">
-                                        Commission : {{ number_format($cmd->commission_application, 0, ',', ' ') }} F
-                                    </p>
-                                @endif
-                            </td>
-
-                            {{-- État --}}
-                            <td class="px-6 py-5">
-                                <form action="{{ route('pharmacie.commandes.statut', $cmd->id) }}" method="POST">
-                                    @csrf @method('PUT')
-                                    <select
-                                        name="etat_commande"
-                                        onchange="this.form.submit()"
-                                        class="text-[9px] font-black uppercase rounded-full px-3 py-1 border cursor-pointer focus:outline-none
-                                            {{ $cmd->etat_commande === 'en_attente'   ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                                               ($cmd->etat_commande === 'en_livraison' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                                               ($cmd->etat_commande === 'livre'        ? 'bg-green-100 text-green-700 border-green-200' :
-                                               ($cmd->etat_commande === 'a_retirer'    ? 'bg-purple-100 text-purple-700 border-purple-200' :
-                                               ($cmd->etat_commande === 'en_preparation' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                                               'bg-gray-100 text-gray-600 border-gray-200')))) }}"
-                                    >
-                                        <option value="en_attente"      {{ $cmd->etat_commande === 'en_attente'      ? 'selected' : '' }}>⏳ En attente</option>
-                                        <option value="en_preparation"  {{ $cmd->etat_commande === 'en_preparation'  ? 'selected' : '' }}>💊 En préparation</option>
-                                        <option value="en_livraison"    {{ $cmd->etat_commande === 'en_livraison'    ? 'selected' : '' }}>🚚 En livraison</option>
-                                        <option value="a_retirer"       {{ $cmd->etat_commande === 'a_retirer'       ? 'selected' : '' }}>🏪 À retirer</option>
-                                        <option value="livre"           {{ $cmd->etat_commande === 'livre'           ? 'selected' : '' }}>✅ Livré</option>
-                                    </select>
-                                </form>
-                            </td>
-
-                            {{-- Date --}}
-                            <td class="px-6 py-5 text-[10px] text-gray-400 font-bold whitespace-nowrap">
-                                {{ $cmd->created_at->format('d/m/Y') }}<br>
-                                <span class="text-gray-300">{{ $cmd->created_at->format('H:i') }}</span>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="py-32 text-center">
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
-                                        <svg class="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                                        </svg>
-                                    </div>
-                                    <p class="font-black text-gray-300 uppercase tracking-[0.5em] italic text-sm">
-                                        Aucune commande reçue
-                                    </p>
-                                    <p class="text-gray-300 text-xs">Les commandes passées via Hygie+ apparaîtront ici automatiquement</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
     </div>
 
-    @if(session('success'))
-    <div class="fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-2xl shadow-lg font-bold text-sm z-50"
-         x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
-        ✅ {{ session('success') }}
+    {{-- STATS --}}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#F1F5F9">🧪</div>
+            <div class="stat-label">Stock</div>
+            <div class="stat-value">{{ $totalProduits ?? 0 }}</div>
+            <div class="stat-sub">Médicaments disponibles</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#FFFBEB">📦</div>
+            <div class="stat-label">En attente</div>
+            <div class="stat-value" style="color:#D97706">{{ $commandes->where('statut', 'en_attente')->count() }}</div>
+            <div class="stat-sub">Commandes à traiter</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#ECFDF5">🚚</div>
+            <div class="stat-label">Livrées</div>
+            <div class="stat-value">{{ $totalLivrees ?? 0 }}</div>
+            <div class="stat-sub">Commandes livrées</div>
+        </div>
+        <div class="stat-card accent">
+            <div class="stat-icon" style="background:rgba(255,255,255,0.1)">💰</div>
+            <div class="stat-label">Revenu net</div>
+            <div class="stat-value" style="font-size:1.4rem">
+                {{ number_format($commandes->sum('montant_pharmacie') ?? 0, 0, ',', ' ') }}
+                <span style="font-size:0.9rem;opacity:0.6">FCFA</span>
+            </div>
+            <div class="stat-sub">Net pharmacie</div>
+        </div>
     </div>
-    @endif
+
+    {{-- TABLE COMMANDES --}}
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-dot"></div>
+                Flux des commandes
+                <span class="card-badge">{{ $totalCommandes ?? 0 }} au total</span>
+            </div>
+            <div class="live-badge">
+                <span class="live-dot"></span>
+                Live
+            </div>
+        </div>
+
+        <div style="overflow-x:auto">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Commande</th>
+                        <th>Patient & Contact</th>
+                        <th>Mode</th>
+                        <th class="right">Net Pharmacie</th>
+                        <th class="center">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($commandes ?? [] as $cmd)
+                    <tr>
+                        <td>
+                            <span class="ref-badge">{{ $cmd->reference_commande ?? '#' . $cmd->id }}</span>
+                            <div class="date-cell">{{ $cmd->created_at->format('d/m/Y à H:i') }}</div>
+                        </td>
+                        <td>
+                            @php
+                                $patientName = $cmd->patient_nom
+                                    ?? (optional($cmd->patient)->role !== 'admin' ? optional($cmd->patient)->name : null)
+                                    ?? 'Patient Anonyme';
+                            @endphp
+                            <div class="patient-name">{{ $patientName }}</div>
+                            <div class="patient-tel">{{ $cmd->patient_telephone ?? '—' }}</div>
+                        </td>
+                        <td>
+                            <span class="mode-badge {{ $cmd->mode_livraison === 'livraison' ? 'mode-livraison' : 'mode-retrait' }}">
+                                {{ $cmd->mode_livraison === 'livraison' ? 'Livraison' : 'Retrait' }}
+                            </span>
+                        </td>
+                        <td style="text-align:right">
+                            <span class="amount-main">
+                                {{ number_format($cmd->montant_pharmacie ?? $cmd->montant_total ?? 0, 0, ',', ' ') }} F
+                            </span>
+                        </td>
+                        <td style="text-align:center">
+                            <form action="{{ route('pharmacie.commandes.statut', $cmd->id) }}" method="POST">
+                                @csrf @method('PUT')
+                                @php $s = $cmd->statut ?? 'en_attente'; @endphp
+                                <select name="statut" onchange="this.form.submit()"
+                                    class="statut-select sel-{{ $s }}">
+                                    <option value="en_attente"     {{ $s==='en_attente'     ? 'selected':'' }}>⏳ En attente</option>
+                                    <option value="en_preparation" {{ $s==='en_preparation' ? 'selected':'' }}>💊 Préparation</option>
+                                    <option value="en_livraison"   {{ $s==='en_livraison'   ? 'selected':'' }}>🚚 En cours</option>
+                                    <option value="a_retirer"      {{ $s==='a_retirer'      ? 'selected':'' }}>🏪 À retirer</option>
+                                    <option value="livree"         {{ $s==='livree'         ? 'selected':'' }}>✅ Livré</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr class="empty-row"><td colspan="5">Aucune commande reçue pour le moment</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{{-- TOAST --}}
+@if(session('success'))
+<div class="toast" x-data="{ show: true }" x-show="show"
+     x-init="setTimeout(() => show = false, 3500)" x-transition>
+    <span class="toast-dot"></span>
+    <span>{{ session('success') }}</span>
+</div>
+@endif
 
 </x-app-layout>

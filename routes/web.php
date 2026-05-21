@@ -9,7 +9,10 @@ use App\Http\Controllers\Pharmacie\StockController;
 use App\Http\Controllers\Pharmacie\LivreurController;
 use App\Http\Controllers\Pharmacie\ExpeditionController;
 use App\Http\Controllers\Pharmacie\CommandesController;
-
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Pharmacie\RevenusController;
+use App\Http\Controllers\ProfilController;
 // ─────────────────────────────────────────────────────────────────────────────
 // ACCUEIL & AUTHENTIFICATION
 // ─────────────────────────────────────────────────────────────────────────────
@@ -61,6 +64,16 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         });
 });
 
+// Admin - nouvelles routes
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+    // ... vos routes existantes ...
+
+    Route::get('/utilisateurs', [AdminController::class, 'utilisateurs'])->name('utilisateurs.index');
+    Route::get('/commandes',    [AdminController::class, 'commandes'])->name('commandes.index');
+    Route::get('/revenus',      [AdminController::class, 'revenus'])->name('revenus.index');
+    Route::get('/avis',         [AdminController::class, 'avis'])->name('avis.index');
+    Route::delete('/utilisateurs/{user}', [AdminController::class, 'destroyUser'])->name('utilisateurs.destroy');
+});
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION PHARMACIE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -89,9 +102,21 @@ Route::middleware(['auth', 'role:pharmacie'])
         // COMMANDES (Correction ici : l'URL devient /pharmacie/commandes)
       // ✅ APRÈS - bien dans le groupe, préfixe correct, nom correct
 Route::get('/commandes', [CommandesController::class, 'index'])->name('commandes');
+// Redirection sécurisée pour les visites GET accidentelles (la mise à jour réelle se fait en PUT)
+Route::get('/commandes/{id}/statut', function($id){
+    return redirect()->route('pharmacie.dashboard');
+});
+
 Route::put('/commandes/{id}/statut', [PharmacieDashboard::class, 'updateStatut'])->name('commandes.statut');
 });
 
+Route::middleware(['auth'])->prefix('pharmacie')->name('pharmacie.')->group(function () {
+
+    // ... tes autres routes pharmacie ...
+
+    Route::get('/revenus', [RevenusController::class, 'index'])->name('revenus');
+
+});
 // ─────────────────────────────────────────────────────────────────────────────
 // GESTION DU PROFIL
 // ─────────────────────────────────────────────────────────────────────────────
@@ -103,3 +128,4 @@ Route::middleware(['auth'])
         Route::patch('/',  [ProfileController::class, 'update'])->name('update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
 });
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
