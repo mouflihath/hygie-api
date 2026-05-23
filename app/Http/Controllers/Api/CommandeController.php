@@ -150,6 +150,56 @@ class CommandeController extends Controller
         }
     }
 
+    /**
+     * 🛡️ AJOUT SÉCURISÉ : Récupère uniquement l'historique du patient connecté.
+     * GET /api/patient/commandes
+     */
+    public function monHistorique(Request $request)
+    {
+        // 1. On cherche l'ID du patient de manière robuste (Auth ou token d'en-tête)
+        $patientId = Auth::id();
+        if (!$patientId) {
+            $token_auth = $request->header('Authorization');
+            if ($token_auth) {
+                $tokenValue = str_replace('Bearer ', '', $token_auth);
+                $personalToken = DB::table('personal_access_tokens')
+                    ->where('token', hash('sha256', $tokenValue))
+                    ->first();
+                if ($personalToken) {
+                    $patientId = $personalToken->tokenable_id;
+                }
+            }
+        }
+
+        // Si vraiment aucun patient n'est détecté, on bloque l'accès
+        if (!$patientId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non authentifié.'
+            ], 401);
+        }
+
+        // 2. On récupère UNIQUEMENT les commandes de ce patient
+        $commandes = Commande::where('patient_id', $patientId)
+            ->with(['lignes']) // Au cas où tu aurais besoin d'afficher le détail des médicaments plus tard
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 3. On formate la collection pour qu'elle corresponde exactement aux propriétés lues par ton React
+        $historiqueFormate = $commandes->map(function ($cmd, $index) {
+            return [
+                'reference' => $cmd->reference_commande ?? ('CMD-' . str_pad($cmd->id, 5, '0', STR_PAD_LEFT)),
+                'date' => $cmd->created_at ? $cmd->created_at->format('d/m/Y H:i') : now()->format('d/m/Y H:i'),
+                'statut' => $cmd->statut ?? 'en_attente',
+                'pharmacie' => 'Pharmacie App ' . ($cmd->pharmacie_id ?? ''), // Tu pourras lier la relation pharmacie plus tard si tu veux son vrai nom
+                'mode_livraison' => $cmd->mode_livraison ?? 'retrait',
+                'montant' => (float) ($cmd->montant_total_patient ?? $cmd->montant_total ?? 0),
+            ];
+        });
+
+        return response()->json($historiqueFormate);
+    }
+
     public function commandesPharmacie($id)
     {
         $commandes = Commande::where('pharmacie_id', $id)

@@ -21,7 +21,7 @@ class DashboardController extends Controller
             ->get();
 
         $commandesEnAttente = $commandes->where('statut', 'en_attente')->count();
-        $totalLivrees       = $commandes->where('statut', 'livree')->count();
+        $totalLivrees       = $commandes->where('statut', 'validée')->count();
         $totalCommandes     = $commandes->count();
 
         $totalProduits = DB::table('stocks')
@@ -49,7 +49,7 @@ class DashboardController extends Controller
 
         // Validation simple pour s'assurer que la valeur envoyée est correcte
         $request->validate([
-            'statut' => 'required|string|in:en_attente,en_preparation,en_livraison,a_retirer,livree'
+            'statut' => 'required|string|in:en_attente,validée'
         ]);
 
         // ATTENTION : Si ta colonne en Base de Données s'appelle 'statut', remplace 'etat_commande' à gauche par 'statut'

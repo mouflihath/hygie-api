@@ -38,9 +38,7 @@
             transition: all 0.15s;
             gap: 0;
         }
-        .nav-link:hover {
-            background: rgba(255,255,255,0.06);
-        }
+        .nav-link:hover { background: rgba(255,255,255,0.06); }
         .nav-link.active {
             background: rgba(255,255,255,0.12);
             border-left-color: white;
@@ -154,39 +152,157 @@
             cursor: pointer;
             transition: all 0.15s;
             display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
         .toggle-btn:hover { background: #064E3B; color: white; border-color: #064E3B; }
+
+        /* ── OVERLAY MOBILE ── */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 25;
+            backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.active { display: block; }
+
+        /* ── RESPONSIVE ── */
+
+        /* Tablette : sidebar en icônes uniquement */
+        @media (max-width: 1024px) {
+            .sidebar-desktop {
+                width: 72px !important;
+            }
+            .sidebar-desktop .nav-label,
+            .sidebar-desktop .nav-section-label,
+            .sidebar-desktop .sidebar-logo-full,
+            .sidebar-desktop .logout-label {
+                display: none !important;
+            }
+            .sidebar-desktop .sidebar-logo-short { display: flex !important; }
+        }
+
+        /* Mobile : sidebar cachée par défaut, s'ouvre en drawer overlay */
+        @media (max-width: 640px) {
+            .sidebar-desktop {
+                position: fixed !important;
+                top: 0; left: 0; bottom: 0;
+                width: 272px !important;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease, width 0.3s !important;
+                z-index: 30;
+            }
+            .sidebar-desktop.mobile-open {
+                transform: translateX(0) !important;
+            }
+            /* Sur mobile la sidebar ouverte montre toujours les labels */
+            .sidebar-desktop.mobile-open .nav-label,
+            .sidebar-desktop.mobile-open .nav-section-label,
+            .sidebar-desktop.mobile-open .sidebar-logo-full,
+            .sidebar-desktop.mobile-open .logout-label {
+                display: block !important;
+            }
+            .sidebar-desktop.mobile-open .nav-label { display: inline !important; }
+            .sidebar-desktop.mobile-open .sidebar-logo-full { display: flex !important; }
+            .sidebar-desktop.mobile-open .sidebar-logo-short { display: none !important; }
+
+            /* Le contenu principal prend toute la largeur */
+            .main-content-area {
+                margin-left: 0 !important;
+            }
+
+            /* Header plus compact */
+            .header-inner {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            /* Masquer le titre de rôle sur très petit écran */
+            .header-role-block { display: none; }
+        }
+
+        /* Header avatar légèrement plus petit sur mobile */
+        @media (max-width: 640px) {
+            .header-avatar {
+                height: 36px; width: 36px;
+                font-size: 0.78rem;
+            }
+        }
+
+        /* Ajustements tablette intermédiaire */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .main-content-area {
+                /* La sidebar fait 72px, plus besoin d'ajustement car elle est dans le flux flex */
+            }
+            .header-inner {
+                padding-left: 1.25rem !important;
+                padding-right: 1.25rem !important;
+            }
+        }
+
+        /* Contenu principal : évite que les cards débordent sur petit écran */
+        @media (max-width: 640px) {
+            main > * {
+                min-width: 0;
+            }
+        }
     </style>
 </head>
 
-<body class="font-sans antialiased" x-data="{ sidebarOpen: true }">
+<body class="font-sans antialiased"
+      x-data="{
+        sidebarOpen: window.innerWidth >= 1024,
+        isMobile: window.innerWidth < 640,
+        init() {
+            const update = () => {
+                this.isMobile = window.innerWidth < 640;
+                if (!this.isMobile) this.sidebarOpen = window.innerWidth >= 1024;
+            };
+            window.addEventListener('resize', update);
+        }
+      }">
+
+{{-- Overlay mobile --}}
+<div class="sidebar-overlay"
+     :class="{ 'active': sidebarOpen && isMobile }"
+     @click="sidebarOpen = false">
+</div>
+
 <div class="flex h-screen overflow-hidden">
 
     {{-- ── SIDEBAR ── --}}
-    <aside :class="sidebarOpen ? 'w-68' : 'w-20'"
-           style="width: var(--sidebar-w); transition: width 0.3s;"
-           :style="sidebarOpen ? 'width:272px' : 'width:72px'"
-           class="bg-[#064E3B] text-white flex flex-col shrink-0 z-30 shadow-2xl">
+    <aside :class="{
+               'mobile-open': sidebarOpen && isMobile,
+               'w-[272px]': sidebarOpen && !isMobile,
+               'w-[72px]': !sidebarOpen && !isMobile
+           }"
+           class="sidebar-desktop bg-[#064E3B] text-white flex flex-col shrink-0 shadow-2xl transition-all duration-300">
 
         {{-- Logo --}}
         <div class="h-20 flex items-center px-5 border-b border-white/10 shrink-0">
-            <span x-show="sidebarOpen" class="font-serif font-bold text-2xl text-white leading-none">
-                Hygie<span class="text-green-400">+</span>
-                <span class="text-green-400 font-sans font-normal text-[10px] block leading-none tracking-widest mt-1 uppercase opacity-70">
+            <div x-show="sidebarOpen" class="leading-none">
+                <div class="font-serif font-bold text-2xl text-white leading-none">
+                    Hygie<span class="text-green-400">+</span>
+                </div>
+                <span class="text-green-400 font-sans font-normal text-[10px] leading-none tracking-widest mt-1 uppercase opacity-70 block">
                     {{ Auth::user()->role }}
                 </span>
+            </div>
+            <span x-show="!sidebarOpen && !isMobile" class="font-serif font-bold text-xl text-white">
+                H<span class="text-green-400">+</span>
             </span>
-            <span x-show="!sidebarOpen" class="font-serif font-bold text-xl text-white">H<span class="text-green-400">+</span></span>
         </div>
 
         {{-- Nav --}}
         <nav class="flex-1 py-5 px-2 space-y-0.5 overflow-y-auto">
 
             {{-- Général --}}
-            <span x-show="sidebarOpen" class="nav-section-label">Général</span>
+            <span x-show="sidebarOpen || isMobile" class="nav-section-label">Général</span>
 
             <a href="{{ route('dashboard') }}"
-               class="nav-link {{ request()->routeIs('*.dashboard') || request()->routeIs('dashboard') ? 'active' : '' }}">
+               class="nav-link {{ request()->routeIs('*.dashboard') || request()->routeIs('dashboard') ? 'active' : '' }}"
+               @click="if(isMobile) sidebarOpen = false">
                 <div class="nav-icon-wrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
@@ -201,7 +317,8 @@
                 <span x-show="sidebarOpen" class="nav-section-label">Gestion Plateforme</span>
 
                 <a href="{{ route('admin.pharmacies.index') }}"
-                   class="nav-link {{ request()->routeIs('admin.pharmacies.*') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('admin.pharmacies.*') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -211,7 +328,8 @@
                 </a>
 
                 <a href="{{ route('admin.utilisateurs.index') }}"
-                   class="nav-link {{ request()->routeIs('admin.utilisateur.*') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('admin.utilisateur.*') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -221,7 +339,8 @@
                 </a>
 
                 <a href="{{ route('admin.commandes.index') }}"
-                   class="nav-link {{ request()->routeIs('admin.commandes.*') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('admin.commandes.*') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
@@ -231,7 +350,8 @@
                 </a>
 
                 <a href="{{ route('admin.revenus.index') }}"
-                   class="nav-link {{ request()->routeIs('admin.revenus.*') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('admin.revenus.*') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -241,7 +361,8 @@
                 </a>
 
                 <a href="{{ route('admin.avis.index') }}"
-                   class="nav-link {{ request()->routeIs('admin.avis.*') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('admin.avis.*') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
@@ -258,7 +379,8 @@
                 <span x-show="sidebarOpen" class="nav-section-label">Ma Pharmacie</span>
 
                 <a href="{{ route('pharmacie.commandes') }}"
-                   class="nav-link {{ request()->routeIs('pharmacie.commandes') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('pharmacie.commandes') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -268,7 +390,8 @@
                 </a>
 
                 <a href="{{ route('pharmacie.stocks.index') }}"
-                   class="nav-link {{ request()->routeIs('pharmacie.stocks.*') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('pharmacie.stocks.*') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 11v10l8 4"/>
@@ -278,7 +401,8 @@
                 </a>
 
                 <a href="{{ route('pharmacie.livreurs.index') }}"
-                   class="nav-link {{ request()->routeIs('pharmacie.livreurs.*') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('pharmacie.livreurs.*') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -289,7 +413,8 @@
                 </a>
 
                 <a href="{{ route('pharmacie.revenus') }}"
-                   class="nav-link {{ request()->routeIs('admin.revenus.*') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('pharmacie.revenus') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -304,7 +429,8 @@
             <div class="pt-5 space-y-0.5">
                 <span x-show="sidebarOpen" class="nav-section-label">Compte</span>
                 <a href="{{ route('profile.edit') }}"
-                   class="nav-link {{ request()->routeIs('profile.edit') ? 'active-green' : '' }}">
+                   class="nav-link {{ request()->routeIs('profile.edit') ? 'active-green' : '' }}"
+                   @click="if(isMobile) sidebarOpen = false">
                     <div class="nav-icon-wrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -323,176 +449,176 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                     </svg>
-                    <span x-show="sidebarOpen" style="margin-left:14px;">Quitter</span>
+                    <span x-show="sidebarOpen" class="logout-label" style="margin-left:14px;">Quitter</span>
                 </button>
             </form>
         </div>
     </aside>
 
     {{-- ── CONTENU ── --}}
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="main-content-area flex-1 flex flex-col overflow-hidden min-w-0">
 
         {{-- Header --}}
-        <header class="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 z-20 shrink-0"
-        style="box-shadow: 0 1px 0 #EEF1F7;">
-    <div class="flex items-center gap-5">
-        <button @click="sidebarOpen = !sidebarOpen" class="toggle-btn">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M4 6h16M4 12h16M4 18h7" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-        </button>
-        <div class="hidden md:block">
-            <p class="header-platform-label">Plateforme Hygie+</p>
-            <p class="header-role-title">
-                @if(Auth::user()->role === 'admin') Administration Centrale
-                @elseif(Auth::user()->role === 'pharmacie') Espace Pharmacie
-                @else Espace Coursier @endif
-            </p>
-        </div>
-    </div>
+        <header class="header-inner h-16 sm:h-20 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-6 md:px-8 z-20 shrink-0"
+                style="box-shadow: 0 1px 0 #EEF1F7;">
 
-    <div class="flex items-center gap-4">
-
-        {{-- ── Cloche de notifications ─────────────────────────────── --}}
-        <div class="relative" x-data="{ open: false }">
-            <button @click="open = !open"
-                    class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-100"
-                    style="color:#0A1628">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                </svg>
-
-                {{-- Badge compteur --}}
-                @php
-                    $nbNotifs = 0;
-                    if(Auth::user()->role === 'pharmacie' && Auth::user()->pharmacie) {
-                        $nbNotifs = \App\Models\Commande::where('pharmacie_id', Auth::user()->pharmacie->id)
-                            ->where('statut', 'en_attente')
-                            ->count();
-                    } elseif(Auth::user()->role === 'admin') {
-                        $nbNotifs = \App\Models\Commande::where('statut', 'en_attente')->count();
-                    }
-                @endphp
-
-                @if($nbNotifs > 0)
-                <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1
-                             text-white rounded-full text-[10px] font-bold leading-none"
-                      style="background:#064E3B; font-family:'DM Mono',monospace;">
-                    {{ $nbNotifs > 99 ? '99+' : $nbNotifs }}
-                </span>
-                @endif
-            </button>
-
-            {{-- Dropdown notifications --}}
-            <div x-show="open"
-                 @click.outside="open = false"
-                 x-transition:enter="transition ease-out duration-150"
-                 x-transition:enter-start="opacity-0 scale-95 translate-y-1"
-                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                 x-transition:leave="transition ease-in duration-100"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
-                 class="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
-                 style="top:100%">
-
-                <div class="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-                    <span style="font-size:.8rem;font-weight:700;color:#0A1628;">Notifications</span>
-                    @if($nbNotifs > 0)
-                    <span style="font-size:.65rem;font-weight:700;background:#ECFDF5;color:#064E3B;padding:2px 8px;border-radius:20px;">
-                        {{ $nbNotifs }} en attente
-                    </span>
-                    @endif
-                </div>
-
-                @php
-                    $dernieresCommandes = collect();
-                    if(Auth::user()->role === 'pharmacie' && Auth::user()->pharmacie) {
-                        $dernieresCommandes = \App\Models\Commande::where('pharmacie_id', Auth::user()->pharmacie->id)
-                            ->where('statut', 'en_attente')
-                            ->latest()
-                            ->limit(5)
-                            ->get();
-                    } elseif(Auth::user()->role === 'admin') {
-                        $dernieresCommandes = \App\Models\Commande::where('statut', 'en_attente')
-                            ->latest()
-                            ->limit(5)
-                            ->get();
-                    }
-                @endphp
-
-                <div style="max-height:280px;overflow-y:auto;">
-                    @forelse($dernieresCommandes as $cmd)
-                    <a href="{{ Auth::user()->role === 'pharmacie' ? route('pharmacie.commandes') : route('admin.commandes.index') }}"
-                       class="flex items-start gap-3 px-5 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
-                        <div class="mt-0.5 flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
-                             style="background:#FEF3C7;">
-                            <svg class="w-4 h-4" fill="none" stroke="#B45309" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p style="font-size:.78rem;font-weight:700;color:#0A1628;margin:0;">
-                                Nouvelle commande
-                            </p>
-                            <p style="font-size:.7rem;color:#94A3B8;margin:2px 0 0;font-family:'DM Mono',monospace;">
-                                {{ $cmd->reference_commande }} · {{ $cmd->created_at->diffForHumans() }}
-                            </p>
-                        </div>
-                    </a>
-                    @empty
-                    <div class="px-5 py-8 text-center">
-                        <div style="font-size:1.5rem;margin-bottom:8px;">🎉</div>
-                        <p style="font-size:.75rem;color:#94A3B8;font-weight:600;">Aucune commande en attente</p>
-                    </div>
-                    @endforelse
-                </div>
-
-                @if($nbNotifs > 5)
-                <div class="px-5 py-3 border-t border-gray-50 text-center">
-                    <a href="{{ Auth::user()->role === 'pharmacie' ? route('pharmacie.commandes') : route('admin.commandes.index') }}"
-                       style="font-size:.75rem;font-weight:700;color:#064E3B;">
-                        Voir toutes les commandes →
-                    </a>
-                </div>
-                @endif
-            </div>
-        </div>
-
-        {{-- ── Avatar + nom ────────────────────────────────────────── --}}
-        <div class="flex items-center gap-3">
-            <div class="text-right hidden sm:block">
-                <p class="header-username">{{ Auth::user()->name }}</p>
-@if(Auth::user()->custom_code)
-    <span class="header-code">{{ Auth::user()->custom_code }}</span>
-@endif
-            </div>
-
-            {{-- Photo de profil ou initiale --}}
-            <a href="{{ route('profile.edit') }}" class="block relative group">
-                @if(Auth::user()->photo_profil)
-                    <img src="{{ Storage::url(Auth::user()->photo_profil) }}"
-                         alt="{{ Auth::user()->name }}"
-                         class="w-10 h-10 rounded-xl object-cover border-2 border-white ring-2 ring-gray-100 group-hover:ring-green-200 transition-all">
-                @else
-                    <div class="header-avatar group-hover:ring-2 group-hover:ring-green-200 transition-all">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                    </div>
-                @endif
-                {{-- Petit crayon au hover --}}
-                <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-white border border-gray-100 rounded-full
-                             flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="#064E3B" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+            <div class="flex items-center gap-3 sm:gap-5 min-w-0">
+                <button @click="sidebarOpen = !sidebarOpen" class="toggle-btn">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 6h16M4 12h16M4 18h7" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
+                </button>
+                <div class="header-role-block hidden sm:block">
+                    <p class="header-platform-label">Plateforme Hygie+</p>
+                    <p class="header-role-title">
+                        @if(Auth::user()->role === 'admin') Administration Centrale
+                        @elseif(Auth::user()->role === 'pharmacie') Espace Pharmacie
+                        @else Espace Coursier @endif
+                    </p>
+                </div>
+                {{-- Titre minimaliste sur mobile --}}
+                <span class="sm:hidden font-serif font-bold text-lg text-[#064E3B]">
+                    Hygie<span class="text-green-500">+</span>
                 </span>
-            </a>
-        </div>
-    </div>
-</header>
-        <main class="flex-1 overflow-y-auto bg-[#F4F6F9]">
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+
+                {{-- ── Cloche de notifications ── --}}
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open"
+                            class="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-100"
+                            style="color:#0A1628">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+
+                        @php
+                            $nbNotifs = 0;
+                            if(Auth::user()->role === 'pharmacie' && Auth::user()->pharmacie) {
+                                $nbNotifs = \App\Models\Commande::where('pharmacie_id', Auth::user()->pharmacie->id)
+                                    ->where('statut', 'en_attente')
+                                    ->count();
+                            } elseif(Auth::user()->role === 'admin') {
+                                $nbNotifs = \App\Models\Commande::where('statut', 'en_attente')->count();
+                            }
+                        @endphp
+
+                        @if($nbNotifs > 0)
+                        <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1
+                                     text-white rounded-full text-[10px] font-bold leading-none"
+                              style="background:#064E3B; font-family:'DM Mono',monospace;">
+                            {{ $nbNotifs > 99 ? '99+' : $nbNotifs }}
+                        </span>
+                        @endif
+                    </button>
+
+                    {{-- Dropdown notifications --}}
+                    <div x-show="open"
+                         @click.outside="open = false"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="absolute right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
+                         style="top:100%; width: min(320px, calc(100vw - 2rem));">
+
+                        <div class="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
+                            <span style="font-size:.8rem;font-weight:700;color:#0A1628;">Notifications</span>
+                            @if($nbNotifs > 0)
+                            <span style="font-size:.65rem;font-weight:700;background:#ECFDF5;color:#064E3B;padding:2px 8px;border-radius:20px;">
+                                {{ $nbNotifs }} en attente
+                            </span>
+                            @endif
+                        </div>
+
+                        @php
+                            $dernieresCommandes = collect();
+                            if(Auth::user()->role === 'pharmacie' && Auth::user()->pharmacie) {
+                                $dernieresCommandes = \App\Models\Commande::where('pharmacie_id', Auth::user()->pharmacie->id)
+                                    ->where('statut', 'en_attente')
+                                    ->latest()->limit(5)->get();
+                            } elseif(Auth::user()->role === 'admin') {
+                                $dernieresCommandes = \App\Models\Commande::where('statut', 'en_attente')
+                                    ->latest()->limit(5)->get();
+                            }
+                        @endphp
+
+                        <div style="max-height:280px;overflow-y:auto;">
+                            @forelse($dernieresCommandes as $cmd)
+                            <a href="{{ Auth::user()->role === 'pharmacie' ? route('pharmacie.commandes') : route('admin.commandes.index') }}"
+                               class="flex items-start gap-3 px-5 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                               @click="open = false">
+                                <div class="mt-0.5 flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                                     style="background:#FEF3C7;">
+                                    <svg class="w-4 h-4" fill="none" stroke="#B45309" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p style="font-size:.78rem;font-weight:700;color:#0A1628;margin:0;">
+                                        Nouvelle commande
+                                    </p>
+                                    <p style="font-size:.7rem;color:#94A3B8;margin:2px 0 0;font-family:'DM Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                        {{ $cmd->reference_commande }} · {{ $cmd->created_at->diffForHumans() }}
+                                    </p>
+                                </div>
+                            </a>
+                            @empty
+                            <div class="px-5 py-8 text-center">
+                                <div style="font-size:1.5rem;margin-bottom:8px;">🎉</div>
+                                <p style="font-size:.75rem;color:#94A3B8;font-weight:600;">Aucune commande en attente</p>
+                            </div>
+                            @endforelse
+                        </div>
+
+                        @if($nbNotifs > 5)
+                        <div class="px-5 py-3 border-t border-gray-50 text-center">
+                            <a href="{{ Auth::user()->role === 'pharmacie' ? route('pharmacie.commandes') : route('admin.commandes.index') }}"
+                               style="font-size:.75rem;font-weight:700;color:#064E3B;">
+                                Voir toutes les commandes →
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- ── Avatar + nom ── --}}
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="text-right hidden sm:block">
+                        <p class="header-username">{{ Auth::user()->name }}</p>
+                        @if(Auth::user()->custom_code)
+                            <span class="header-code">{{ Auth::user()->custom_code }}</span>
+                        @endif
+                    </div>
+
+                    <a href="{{ route('profile.edit') }}" class="block relative group flex-shrink-0">
+                        @if(Auth::user()->photo_profil)
+                            <img src="{{ Storage::url(Auth::user()->photo_profil) }}"
+                                 alt="{{ Auth::user()->name }}"
+                                 class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover border-2 border-white ring-2 ring-gray-100 group-hover:ring-green-200 transition-all">
+                        @else
+                            <div class="header-avatar group-hover:ring-2 group-hover:ring-green-200 transition-all">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
+                        @endif
+                        <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-white border border-gray-100 rounded-full
+                                     flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                            <svg class="w-2.5 h-2.5" fill="none" stroke="#064E3B" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto overflow-x-hidden bg-[#F4F6F9]">
             {{ $slot }}
         </main>
     </div>

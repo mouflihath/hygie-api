@@ -468,7 +468,7 @@
                 <div class="col-2">
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" name="email" class="form-control"
+                        <input type="email" name="email" class="form-control" autoComplete="new-email"
                                placeholder="email@pharmacie.bj" required>
                     </div>
                     <div class="form-group">
@@ -479,7 +479,7 @@
                 </div>
                 <div class="form-group">
                     <label>Mot de passe</label>
-                    <input type="password" name="password" class="form-control"
+                    <input type="password" name="password" class="form-control" autoComplete="new-password"
                            placeholder="••••••••" required>
                 </div>
                 <div class="col-2">

@@ -134,7 +134,7 @@
                             @php
                                 $cls = match($commande->statut) {
                                     'en_attente' => 'status-en_attente',
-                                    'livree','livre' => 'status-livree',
+                                    'validée' => 'status-validée',
                                     default => 'status-default',
                                 };
                             @endphp

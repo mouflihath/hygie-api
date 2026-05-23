@@ -269,10 +269,8 @@
                                 <select name="statut" onchange="this.form.submit()"
                                     class="statut-select sel-{{ $s }}">
                                     <option value="en_attente"     {{ $s==='en_attente'     ? 'selected':'' }}>⏳ En attente</option>
-                                    <option value="en_preparation" {{ $s==='en_preparation' ? 'selected':'' }}>💊 Préparation</option>
-                                    <option value="en_livraison"   {{ $s==='en_livraison'   ? 'selected':'' }}>🚚 En cours</option>
-                                    <option value="a_retirer"      {{ $s==='a_retirer'      ? 'selected':'' }}>🏪 À retirer</option>
-                                    <option value="livree"         {{ $s==='livree'         ? 'selected':'' }}>✅ Livré</option>
+
+                                    <option value="validée"         {{ $s==='validée'         ? 'selected':'' }}>✅ Validée</option>
                                 </select>
                             </form>
                         </td>

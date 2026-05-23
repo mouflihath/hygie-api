@@ -25,7 +25,7 @@ Route::post('/commander', [CommandeController::class, 'store']);
 // Dashboard pharmacie — commandes d'une pharmacie
 Route::get('/pharmacie/{id}/commandes', [CommandeController::class, 'commandesPharmacie']);
 Route::put('/commandes/{id}/statut',    [CommandeController::class, 'updateStatut']);
-
+Route::get('/patient/commandes', [App\Http\Controllers\Api\CommandeController::class, 'monHistorique']);
 // Vérification du statut d'une commande (utilisé par le modal de suivi côté patient)
 Route::get('/commandes/{id}/statut',    [CommandeController::class, 'getStatut']);
 

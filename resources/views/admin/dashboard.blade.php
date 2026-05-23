@@ -444,10 +444,8 @@
                                 @php
                                     $etat = $cmd->etat_commande ?? $cmd->statut ?? 'en_attente';
                                     $cls = match($etat) {
-                                        'livree', 'livre'       => 'status-livre',
-                                        'en_livraison'         => 'status-en_livraison',
-                                        'a_retirer'            => 'status-a_retirer',
-                                        'en_preparation'       => 'status-en_preparation',
+                                        'Validee', 'validée'       => 'status-validée',
+
                                         default                => 'status-en_attente',
                                     };
                                 @endphp
