@@ -198,12 +198,8 @@
             <div class="card-title">
                 <div class="card-title-dot"></div>
                 Flux des commandes
-                <span class="card-badge">{{ $totalCommandes ?? 0 }} au total</span>
             </div>
-            <div class="live-badge">
-                <span class="live-dot"></span>
-                Live
-            </div>
+           
         </div>
 
         <div style="overflow-x:auto">
@@ -211,67 +207,55 @@
                 <thead>
                     <tr>
                         <th>Commande</th>
-                        <th>Patient & Contact</th>
+                        <th>Statut</th>
                         <th>Mode</th>
-                        <th class="right">Net Pharmacie</th>
-                        <th class="center">Statut</th>
+                        <th>Montant</th>
+                        <th style="text-align:center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($commandes ?? [] as $cmd)
+                    @forelse($commandes as $commande)
                     <tr>
                         <td>
-                            <span class="ref-badge">{{ $cmd->reference_commande ?? '#' . $cmd->id }}</span>
-                            <div class="date-cell">{{ $cmd->created_at->format('d/m/Y à H:i') }}</div>
+                            <span class="ref-badge">#CMD-{{ $commande->id }}</span>
+                            <div class="date-cell">{{ $commande->created_at->format('d M Y à H:i') }}</div>
                         </td>
                         <td>
                             @php
-                                $patientName = $cmd->patient_nom
-                                    ?? (optional($cmd->patient)->role !== 'admin' ? optional($cmd->patient)->name : null)
-                                    ?? 'Patient Anonyme';
+                                $cls = match($commande->statut) {
+                                    'en_attente' => 'status-en_attente',
+                                    'validée' => 'status-validée',
+                                    default => 'status-default',
+                                };
                             @endphp
-                            <div class="patient-name">{{ $patientName }}</div>
-                            <div class="patient-tel">{{ $cmd->patient_telephone ?? '—' }}</div>
+                            <span class="status-badge {{ $cls }}">{{ $commande->statut }}</span>
                         </td>
                         <td>
-                            <span class="mode-badge {{ $cmd->mode_livraison === 'livraison' ? 'mode-livraison' : 'mode-retrait' }}">
-                                {{ $cmd->mode_livraison === 'livraison' ? 'Livraison' : 'Retrait' }}
+                            <span class="mode-badge {{ $commande->mode_livraison === 'livraison' ? 'mode-livraison' : 'mode-retrait' }}">
+                                {{ $commande->mode_livraison === 'livraison' ? '🚚 Livraison' : '🏪 Retrait' }}
                             </span>
                         </td>
-                        <td style="text-align:right">
-                            <span class="amount-main">
-                                {{ number_format($cmd->montant_pharmacie ?? $cmd->montant_total ?? 0, 0, ',', ' ') }} F
-                            </span>
+                        <td>
+                            <span class="amount-main">{{ number_format($commande->montant_total, 0, ',', ' ') }} F</span>
                         </td>
                         <td style="text-align:center">
-                            <form action="{{ route('pharmacie.commandes.statut', $cmd->id) }}" method="POST">
-                                @csrf
-                                @method('PATCH')
-                                @php $s = $cmd->statut ?? 'en_attente'; @endphp
-                                <select
-                                    name="statut"
-                                    onchange="this.form.submit()"
-                                    class="statut-select sel-{{ $s }}"
-                                >
-                                    <option value="en_attente" {{ $s === 'en_attente' ? 'selected' : '' }}>
-                                        ⏳ En attente
-                                    </option>
-                                    <option value="validee" {{ $s === 'validee' ? 'selected' : '' }}>
-                                        ✅ Validée
-                                    </option>
-                                </select>
-                            </form>
+                            <div style="display:flex;justify-content:center;gap:6px;">
+                                <button class="action-btn" title="Voir détails">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                </button>
+
+                            </div>
                         </td>
                     </tr>
                     @empty
-                    <tr class="empty-row">
-                        <td colspan="5">Aucune commande reçue pour le moment</td>
-                    </tr>
+                    <tr class="empty-row"><td colspan="5">Aucune commande reçue pour le moment</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
 
 </div>
 
