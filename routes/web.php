@@ -66,8 +66,6 @@ Route::middleware(['auth', 'verified', 'role:admin'])
 
 // Admin - nouvelles routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
-    // ... vos routes existantes ...
-
     Route::get('/utilisateurs', [AdminController::class, 'utilisateurs'])->name('utilisateurs.index');
     Route::get('/commandes',    [AdminController::class, 'commandes'])->name('commandes.index');
     Route::get('/revenus',      [AdminController::class, 'revenus'])->name('revenus.index');
@@ -99,24 +97,22 @@ Route::middleware(['auth', 'role:pharmacie'])
         // Expéditions
         Route::post('/expeditions/store', [ExpeditionController::class, 'store'])->name('expeditions.store');
 
-        // COMMANDES (Correction ici : l'URL devient /pharmacie/commandes)
-      // ✅ APRÈS - bien dans le groupe, préfixe correct, nom correct
-Route::get('/commandes', [CommandesController::class, 'index'])->name('commandes');
-// Redirection sécurisée pour les visites GET accidentelles (la mise à jour réelle se fait en PUT)
-Route::get('/commandes/{id}/statut', function($id){
-    return redirect()->route('pharmacie.dashboard');
-});
+        // COMMANDES
+        Route::get('/commandes', [CommandesController::class, 'index'])->name('commandes');
 
-Route::put('/commandes/{id}/statut', [PharmacieDashboard::class, 'updateStatut'])->name('commandes.statut');
+        // Redirection sécurisée pour les visites GET accidentelles
+        Route::get('/commandes/{id}/statut', function($id){
+            return redirect()->route('pharmacie.dashboard');
+        });
+
+        // ✅ PATCH au lieu de PUT
+        Route::patch('/commandes/{id}/statut', [PharmacieDashboard::class, 'updateStatut'])->name('commandes.statut');
 });
 
 Route::middleware(['auth'])->prefix('pharmacie')->name('pharmacie.')->group(function () {
-
-    // ... tes autres routes pharmacie ...
-
     Route::get('/revenus', [RevenusController::class, 'index'])->name('revenus');
-
 });
+
 // ─────────────────────────────────────────────────────────────────────────────
 // GESTION DU PROFIL
 // ─────────────────────────────────────────────────────────────────────────────
@@ -128,4 +124,5 @@ Route::middleware(['auth'])
         Route::patch('/',  [ProfileController::class, 'update'])->name('update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
 });
+
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -9,8 +9,6 @@
     min-height: 100vh;
     padding: 40px 48px;
 }
-
-/* HEADER */
 .dash-header {
     display: flex; align-items: flex-end; justify-content: space-between;
     margin-bottom: 36px;
@@ -25,9 +23,7 @@
     background: white; border: 1px solid #E8EDF5;
     padding: 8px 16px; border-radius: 20px;
 }
-.header-meta {
-    text-align: right;
-}
+.header-meta { text-align: right; }
 .header-meta .meta-label {
     font-size: 0.65rem; font-weight: 700; color: #B0BAC9;
     text-transform: uppercase; letter-spacing: 0.1em;
@@ -35,8 +31,6 @@
 .header-meta .meta-val {
     font-size: 0.78rem; font-weight: 600; color: #374151; margin-top: 3px;
 }
-
-/* STATS */
 .stats-grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
     gap: 20px; margin-bottom: 28px;
@@ -66,8 +60,6 @@
 .stat-card.accent .stat-sub { color: rgba(255,255,255,0.4); }
 .stat-sub b { color: #3B82F6; }
 .stat-card.accent .stat-sub b { color: #6EE7B7; }
-
-/* CARD */
 .card {
     background: white; border-radius: 22px;
     border: 1px solid #EEF1F7; overflow: hidden;
@@ -99,8 +91,6 @@
     background: #F4F6F9; padding: 5px 12px; border-radius: 20px;
     text-transform: uppercase; letter-spacing: 0.05em;
 }
-
-/* TABLE */
 .dash-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 .dash-table thead tr { background: #FAFBFD; }
 .dash-table th {
@@ -116,7 +106,6 @@
 }
 .dash-table tr:last-child td { border-bottom: none; }
 .dash-table tr:hover td { background: #FAFBFF; }
-
 .ref-badge {
     font-family: 'DM Mono', monospace; font-size: 0.7rem;
     background: #F4F6F9; color: #64748B;
@@ -133,26 +122,19 @@
 }
 .mode-livraison { background: #EFF6FF; color: #3B82F6; }
 .mode-retrait   { background: #F3E8FF; color: #8B5CF6; }
-
 .statut-select {
     font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.05em; border-radius: 10px; padding: 6px 12px;
     border: 1.5px solid; cursor: pointer; outline: none;
     font-family: 'DM Sans', sans-serif; transition: all 0.15s; appearance: none;
 }
-.sel-en_attente   { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
-.sel-en_preparation { background: #FFF7ED; color: #EA580C; border-color: #FED7AA; }
-.sel-en_livraison { background: #EFF6FF; color: #3B82F6; border-color: #BFDBFE; }
-.sel-a_retirer    { background: #F3E8FF; color: #8B5CF6; border-color: #DDD6FE; }
-.sel-livree       { background: #ECFDF5; color: #059669; border-color: #A7F3D0; }
-
+.sel-en_attente { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+.sel-validee    { background: #ECFDF5; color: #059669; border-color: #A7F3D0; }
 .empty-row td {
     padding: 60px 20px; text-align: center;
     color: #C8D0DC; font-size: 0.7rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.15em;
 }
-
-/* TOAST */
 .toast {
     position: fixed; bottom: 28px; right: 28px; z-index: 100;
     background: #064E3B; color: white; padding: 14px 22px; border-radius: 14px;
@@ -161,7 +143,6 @@
     box-shadow: 0 8px 32px rgba(5,150,105,0.2); border: 1px solid rgba(255,255,255,0.1);
 }
 .toast-dot { width: 8px; height: 8px; background: #6EE7B7; border-radius: 50%; flex-shrink: 0; }
-
 @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2,1fr); } .ph-dash-root { padding: 24px; } }
 @media (max-width: 640px)  { .stats-grid { grid-template-columns: 1fr; } }
 </style>
@@ -196,9 +177,9 @@
         </div>
         <div class="stat-card">
             <div class="stat-icon" style="background:#ECFDF5">🚚</div>
-            <div class="stat-label">Livrées</div>
-            <div class="stat-value">{{ $totalLivrees ?? 0 }}</div>
-            <div class="stat-sub">Commandes livrées</div>
+            <div class="stat-label">Validées</div>
+            <div class="stat-value">{{ $commandes->where('statut', 'validee')->count() }}</div>
+            <div class="stat-sub">Commandes validées</div>
         </div>
         <div class="stat-card accent">
             <div class="stat-icon" style="background:rgba(255,255,255,0.1)">💰</div>
@@ -264,19 +245,28 @@
                         </td>
                         <td style="text-align:center">
                             <form action="{{ route('pharmacie.commandes.statut', $cmd->id) }}" method="POST">
-                                @csrf @method('PUT')
+                                @csrf
+                                @method('PATCH')
                                 @php $s = $cmd->statut ?? 'en_attente'; @endphp
-                                <select name="statut" onchange="this.form.submit()"
-                                    class="statut-select sel-{{ $s }}">
-                                    <option value="en_attente"     {{ $s==='en_attente'     ? 'selected':'' }}>⏳ En attente</option>
-
-                                    <option value="validée"         {{ $s==='validée'         ? 'selected':'' }}>✅ Validée</option>
+                                <select
+                                    name="statut"
+                                    onchange="this.form.submit()"
+                                    class="statut-select sel-{{ $s }}"
+                                >
+                                    <option value="en_attente" {{ $s === 'en_attente' ? 'selected' : '' }}>
+                                        ⏳ En attente
+                                    </option>
+                                    <option value="validee" {{ $s === 'validee' ? 'selected' : '' }}>
+                                        ✅ Validée
+                                    </option>
                                 </select>
                             </form>
                         </td>
                     </tr>
                     @empty
-                    <tr class="empty-row"><td colspan="5">Aucune commande reçue pour le moment</td></tr>
+                    <tr class="empty-row">
+                        <td colspan="5">Aucune commande reçue pour le moment</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>

@@ -22,13 +22,17 @@ Route::post('/analyser-ordonnance',  [OrdonnanceController::class, 'analyser']);
 // Commande — publique pour l'instant (tu pourras la protéger plus tard)
 Route::post('/commander', [CommandeController::class, 'store']);
 
-// Dashboard pharmacie — commandes d'une pharmacie
+//  Routes pour le Dashboard de la Pharmacie / Livreur
 Route::get('/pharmacie/{id}/commandes', [CommandeController::class, 'commandesPharmacie']);
 Route::put('/commandes/{id}/statut',    [CommandeController::class, 'updateStatut']);
-Route::get('/patient/commandes', [App\Http\Controllers\Api\CommandeController::class, 'monHistorique']);
-// Vérification du statut d'une commande (utilisé par le modal de suivi côté patient)
-Route::get('/commandes/{id}/statut',    [CommandeController::class, 'getStatut']);
 
+//  Routes pour le Patient (Suivi & Historique)
+Route::get('/commandes/{id}/statut',    [CommandeController::class, 'getStatut']); // public ou privé selon ton choix
+
+//  Route protégée par Sanctum pour l'historique du patient connecté
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/patient/commandes', [CommandeController::class, 'monHistorique']);
+});
 // Webhook FedaPay — GET car FedaPay redirige le navigateur
 Route::get('/webhooks/fedapay',  [WebhookController::class, 'handleFedaPay']);
 Route::post('/webhooks/fedapay', [WebhookController::class, 'handleFedaPay']);
