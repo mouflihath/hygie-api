@@ -119,8 +119,7 @@
                         <th>Pharmacie</th>
                         <th>Mode</th>
                         <th>Statut</th>
-                        <th class="right">Montant patient</th>
-                        <th class="right">Commission</th>
+                        <th>Commission</th>
                         <th>Date</th>
                     </tr>
                 </thead>
@@ -148,9 +147,7 @@
                             </span>
                         </td>
                         <td><span class="status-badge {{ $sCls }}">{{ $etat }}</span></td>
-                        <td style="text-align:right">
-                            <span class="amount">{{ number_format($cmd->montant_total_patient ?? 0, 0, ',', ' ') }} F</span>
-                        </td>
+
                         <td style="text-align:right">
                             <span class="amount commission">{{ number_format($cmd->commission_application ?? 0, 0, ',', ' ') }} F</span>
                         </td>
