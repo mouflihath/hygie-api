@@ -109,7 +109,7 @@
                             <th>Référence</th>
                             <th>Date</th>
                             <th>Statut</th>
-                            <th class="right">Commission</th>
+                            <th class="right">Revenue Net</th>
                         </tr>
                     </thead>
                     <tbody>

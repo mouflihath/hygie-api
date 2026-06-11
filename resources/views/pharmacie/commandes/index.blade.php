@@ -73,7 +73,7 @@
 
     <div class="dash-header">
         <div class="dash-header-left">
-            <h2>Tableau de bord Commandes</h2>
+            <h2>Gestion des Commandes</h2>
             <p>Suivi en temps réel — Hygie+</p>
         </div>
         <div class="dash-date">{{ now()->translatedFormat('l d F Y') }}</div>
