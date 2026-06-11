@@ -113,7 +113,7 @@
             </div>
             <div class="live-badge">
                 <span class="card-badge">{{ $commandes->count() }} commandes</span>
-              
+
 
             </div>
         </div>
@@ -133,7 +133,7 @@
                     @forelse($commandes ?? [] as $cmd)
                     <tr>
                         <td>
-                            <span class="ref-badge">{{ $cmd->reference_commande ?? '#' . $cmd->id }}</span>
+                            <span class="ref-badge">{{ $cmd->pharmacie_reference }}</span>
                             <div class="date-cell">{{ $cmd->created_at->format('d/m/Y à H:i') }}</div>
                         </td>
                         <td>
@@ -172,7 +172,7 @@
                                         ⏳ En attente
                                     </option>
                                     <option value="validee" {{ $s === 'validee' ? 'selected' : '' }} class="bg-white text-gray-800">
-                                        ✅ Validée
+                                        ✅ Livrée
                                     </option>
                                 </select>
                             </form>

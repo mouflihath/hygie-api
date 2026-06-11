@@ -69,4 +69,30 @@ class Commande extends Model
     {
         return $this->hasOne(Paiement::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function getPharmacieReferenceAttribute(): string
+    {
+        if (! $this->pharmacie_id || ! $this->created_at) {
+            return $this->reference_commande
+                ? ('#CMD-' . preg_replace('/^#?CMD-?/i', '', $this->reference_commande))
+                : ('#CMD-' . ($this->id ?? '0'));
+        }
+
+        $count = static::where('pharmacie_id', $this->pharmacie_id)
+            ->where(function ($query) {
+                $query->where('created_at', '<', $this->created_at)
+                    ->orWhere(function ($query2) {
+                        $query2->where('created_at', $this->created_at)
+                            ->where('id', '<=', $this->id);
+                    });
+            })
+            ->count();
+
+        return '#CMD-' . $count;
+    }
 }

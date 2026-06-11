@@ -54,4 +54,6 @@ $statut = $request->input('statut');
 DB::statement("UPDATE commandes SET statut = '{$statut}', updated_at = NOW() WHERE id = {$id}");
         return back()->with('success', 'Le statut de la commande a bien été mis à jour.');
     }
+
+    
 }

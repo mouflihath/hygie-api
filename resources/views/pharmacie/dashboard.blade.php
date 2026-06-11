@@ -143,6 +143,79 @@
     box-shadow: 0 8px 32px rgba(5,150,105,0.2); border: 1px solid rgba(255,255,255,0.1);
 }
 .toast-dot { width: 8px; height: 8px; background: #6EE7B7; border-radius: 50%; flex-shrink: 0; }
+
+.action-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1px solid #E8EDF5; background: white; color: #64748B;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s;
+}
+.action-btn:hover { background: #0A1628; color: white; border-color: #0A1628; }
+
+/* MODAL */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(10,22,40,0.55);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(2px);
+}
+.modal-overlay.active { display: flex; }
+.modal-content {
+    background: white; border-radius: 22px; width: 100%; max-width: 460px;
+    max-height: 90vh; overflow-y: auto; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: modal-pop 0.2s ease;
+}
+@keyframes modal-pop {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 26px; border-bottom: 1px solid #F1F5F9;
+}
+.modal-header h3 {
+    font-size: 1rem; font-weight: 700; color: #0A1628; margin: 0;
+}
+.modal-close {
+    width: 32px; height: 32px; border-radius: 10px; border: none;
+    background: #F4F6F9; color: #64748B; font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; line-height: 1;
+}
+.modal-close:hover { background: #FEE2E2; color: #DC2626; }
+.modal-body { padding: 24px 26px; }
+.modal-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 12px 0; border-bottom: 1px solid #F8FAFC;
+}
+.modal-row:last-child { border-bottom: none; }
+.modal-row-label {
+    font-size: 0.7rem; font-weight: 700; color: #94A3B8;
+    text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
+}
+.modal-row-value {
+    font-size: 0.85rem; font-weight: 600; color: #0A1628; text-align: right;
+}
+.modal-row-value.mono { font-family: 'DM Mono', monospace; }
+.modal-amount-box {
+    background: #064E3B; border-radius: 16px; padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 8px;
+}
+.modal-amount-box .label {
+    font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.5);
+    text-transform: uppercase; letter-spacing: 0.1em;
+}
+.modal-amount-box .value {
+    font-size: 1.3rem; font-weight: 700; color: white;
+    font-family: 'DM Mono', monospace;
+}
+.modal-loading, .modal-error {
+    padding: 50px 20px; text-align: center; font-size: 0.8rem;
+    color: #94A3B8; font-weight: 600;
+}
+.modal-error { color: #DC2626; }
+
 @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2,1fr); } .ph-dash-root { padding: 24px; } }
 @media (max-width: 640px)  { .stats-grid { grid-template-columns: 1fr; } }
 </style>
@@ -177,9 +250,9 @@
         </div>
         <div class="stat-card">
             <div class="stat-icon" style="background:#ECFDF5">🚚</div>
-            <div class="stat-label">Validées</div>
+            <div class="stat-label">Livrées</div>
             <div class="stat-value">{{ $commandes->where('statut', 'validee')->count() }}</div>
-            <div class="stat-sub">Commandes validées</div>
+            <div class="stat-sub">Commandes livrées</div>
         </div>
         <div class="stat-card accent">
             <div class="stat-icon" style="background:rgba(255,255,255,0.1)">💰</div>
@@ -199,7 +272,7 @@
                 <div class="card-title-dot"></div>
                 Flux des commandes
             </div>
-           
+
         </div>
 
         <div style="overflow-x:auto">
@@ -217,7 +290,7 @@
                     @forelse($commandes as $commande)
                     <tr>
                         <td>
-                            <span class="ref-badge">#CMD-{{ $commande->id }}</span>
+                            <span class="ref-badge">{{ $commande->pharmacie_reference }}</span>
                             <div class="date-cell">{{ $commande->created_at->format('d M Y à H:i') }}</div>
                         </td>
                         <td>
@@ -240,7 +313,7 @@
                         </td>
                         <td style="text-align:center">
                             <div style="display:flex;justify-content:center;gap:6px;">
-                                <button class="action-btn" title="Voir détails">
+                                <button class="action-btn voir-details" title="Voir détails" data-id="{{ $commande->id }}">
                                     <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -257,6 +330,21 @@
             </table>
         </div>
 
+    </div>
+
+</div>
+
+{{-- MODAL DETAILS COMMANDE --}}
+<div class="modal-overlay" id="modalDetails">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Détails de la commande <span id="md-ref"></span></h3>
+            <button class="modal-close" id="closeModal">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <div class="modal-loading">Chargement...</div>
+        </div>
+    </div>
 </div>
 
 {{-- TOAST --}}
@@ -267,5 +355,76 @@
     <span>{{ session('success') }}</span>
 </div>
 @endif
+
+<script>
+const modalOverlay = document.getElementById('modalDetails');
+const modalBody = document.getElementById('modalBody');
+const modalRef = document.getElementById('md-ref');
+
+document.querySelectorAll('.voir-details').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        modalRef.textContent = 'Chargement...';
+        modalBody.innerHTML = '<div class="modal-loading">Chargement...</div>';
+        modalOverlay.classList.add('active');
+
+        fetch(`/commandes/${id}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Erreur réseau');
+                return res.json();
+            })
+            .then(data => {
+                modalRef.textContent = data.reference;
+                modalBody.innerHTML = `
+                    <div class="modal-row">
+                        <span class="modal-row-label">N° Commande</span>
+                        <span class="modal-row-value mono">${data.reference}</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-row-label">Pharmacie</span>
+                        <span class="modal-row-value">${data.pharmacie}</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-row-label">Client</span>
+                        <span class="modal-row-value">${data.client_nom}</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-row-label">Mode de livraison</span>
+                        <span class="modal-row-value">${data.mode_livraison_label}</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-row-label">Statut</span>
+                        <span class="modal-row-value">${data.statut}</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="modal-row-label">Date</span>
+                        <span class="modal-row-value">${data.date}</span>
+                    </div>
+                    <div class="modal-amount-box">
+                        <span class="label">Montant total</span>
+                        <span class="value">${data.montant_total} F</span>
+                    </div>
+                `;
+            })
+            .catch(() => {
+                modalBody.innerHTML = '<div class="modal-error">Impossible de charger les détails de la commande.</div>';
+            });
+    });
+});
+
+document.getElementById('closeModal').addEventListener('click', () => {
+    modalOverlay.classList.remove('active');
+});
+
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+        modalOverlay.classList.remove('active');
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') modalOverlay.classList.remove('active');
+});
+</script>
 
 </x-app-layout>

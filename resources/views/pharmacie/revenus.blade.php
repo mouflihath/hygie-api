@@ -126,8 +126,13 @@
                         @endphp
                         <tr>
                             <td>
+                                @php
+                                    $ref = $cmd->reference_commande
+                                        ? preg_replace('/^#?CMD-?/i', '', $cmd->reference_commande)
+                                        : $cmd->id;
+                                @endphp
                                 <span style="font-family:'DM Mono',monospace;font-size:.75rem;font-weight:700;color:#0A1628;">
-                                    {{ $cmd->reference_commande }}
+                                    {{ $cmd->pharmacie_reference }}
                                 </span>
                             </td>
                             <td>

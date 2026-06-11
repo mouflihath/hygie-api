@@ -44,8 +44,7 @@ public function livreurs()
     return $this->hasMany(Livreur::class);
 }
 protected $fillable = [
-        'user_id', 'telephone', 'nom_pharmacie', 'adresse', 'ville', 'image', 'validee'
-    ];
+        'user_id', 'telephone', 'nom_pharmacie', 'adresse', 'ville', 'image', 'validee'];
 
     protected $hidden = [
         'password'

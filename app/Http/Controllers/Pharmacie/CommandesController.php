@@ -20,4 +20,42 @@ class CommandesController extends Controller
 
         return view('pharmacie.commandes.index', compact('commandes'));
     }
+
+    public function show(Commande $commande)
+    {
+        $commande->load(['patient.patient', 'pharmacie']);
+
+        $statutLabel = 'En attente';
+        if (in_array($commande->statut, ['validée', 'validé', 'livree', 'livrée', 'livree'], true)) {
+            $statutLabel = 'Livrée';
+        } elseif ($commande->statut && $commande->statut !== 'en_attente') {
+            $statutLabel = ucfirst(str_replace('_', ' ', $commande->statut));
+        }
+
+        return response()->json([
+            'reference' => $commande->pharmacie_reference,
+            'client_nom' => $commande->patient_nom
+                ?? ($commande->patient ? trim($commande->patient->name . ' ' . $commande->patient->surname) : null)
+                ?? 'N/A',
+            'client_telephone' => $commande->patient_telephone
+                ?? $commande->patient?->patient?->telephone
+                ?? 'N/A',
+            'adresse' => $commande->patient?->patient?->adresse ?? 'N/A',
+            'pharmacie' => $commande->pharmacie?->nom_pharmacie
+                ?? 'Pharmacie #' . ($commande->pharmacie_id ?? 'N/A'),
+            'mode_livraison_label' => $commande->mode_livraison === 'livraison'
+                ? '🚚 Livraison'
+                : '🏪 Retrait',
+            'statut' => $statutLabel,
+            'montant_total' => number_format(
+                $commande->montant_total_patient
+                    ?? $commande->montant_total
+                    ?? 0,
+                0,
+                ',',
+                ' '
+            ),
+            'date' => optional($commande->created_at)->format('d M Y à H:i'),
+        ]);
+    }
 }
